@@ -3,17 +3,22 @@ name = "ripfy-server"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[workspace]
+members = [".", "entity", "migration"]
 
-[dependencies]
-anyhow = "1.0.75"
-axum = "0.6.20"
-figment = { version = "0.10.10", features = ["toml"] }
-lazy_static = "1.4.0"
-sea-orm = { version = "0.12", features = [
+[workspace.dependencies]
+sea-orm = { version = "0.12.2", features = [
   "sqlx-sqlite",
   "runtime-tokio-rustls",
   "macros",
 ] }
 serde = { version = "1.0.188", features = ["derive"] }
+
+[dependencies]
+anyhow = "1.0.75"
+axum = "0.6.20"
+figment = { version = "0.10.10", features = ["toml"] }
+sea-orm = { workspace = true }
+serde = { workspace = true }
+lazy_static = "1.4.0"
 tokio = { version = "1.32.0", features = ["full"] }

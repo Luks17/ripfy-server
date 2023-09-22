@@ -1,6 +1,6 @@
 use anyhow::Result;
 use axum::{routing, Router, Server};
-use ripfy_server::{db, AppState, CONF};
+use ripfy_server::{config, db, AppState};
 use std::net::SocketAddr;
 
 #[tokio::main]
@@ -16,7 +16,7 @@ async fn main() -> Result<()> {
         .route("/", routing::get(|| async { "Hello, World!" }))
         .with_state(state);
 
-    let socket_address = SocketAddr::from(([0, 0, 0, 0], CONF.port));
+    let socket_address = SocketAddr::from(([0, 0, 0, 0], config().port));
     tracing::info!("Listening on {}", socket_address);
 
     Server::bind(&socket_address)

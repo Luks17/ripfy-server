@@ -3,7 +3,7 @@ use std::{fs, time::Duration};
 use anyhow::{Context, Result};
 use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 
-use crate::CONF;
+use crate::config;
 
 /// Tries to connect to existing database
 pub async fn connect() -> Result<DatabaseConnection> {
@@ -27,7 +27,7 @@ pub async fn connect() -> Result<DatabaseConnection> {
 /// Creates database file if does not exist
 /// Returns a Result with the string of the location or an error if it was not possible to create a file
 fn get_db_file() -> Result<String> {
-    let db_location = CONF.db_location.as_str();
+    let db_location = config().db_location.as_str();
 
     if fs::metadata(db_location).is_err() {
         fs::File::create(db_location)

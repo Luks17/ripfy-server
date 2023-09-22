@@ -22,3 +22,5 @@ sea-orm = { workspace = true }
 serde = { workspace = true }
 lazy_static = "1.4.0"
 tokio = { version = "1.32.0", features = ["full"] }
+tracing = "0.1.37"
+tracing-subscriber = "0.3.17"

@@ -1,5 +1,6 @@
 pub mod conf;
 pub mod db;
+pub mod routes;
 
 pub use conf::config;
 

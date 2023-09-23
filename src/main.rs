@@ -1,7 +1,8 @@
 use anyhow::Result;
 use axum::{routing, Router, Server};
-use ripfy_server::{config, db, AppState};
+use ripfy_server::{config, db, routes, AppState};
 use std::net::SocketAddr;
+use tower_cookies::CookieManagerLayer;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -14,7 +15,8 @@ async fn main() -> Result<()> {
 
     let app = Router::new()
         .route("/", routing::get(|| async { "Hello, World!" }))
-        .with_state(state);
+        .merge(routes::login::router(state.clone()))
+        .layer(CookieManagerLayer::new());
 
     let socket_address = SocketAddr::from(([0, 0, 0, 0], config().port));
     tracing::info!("Listening on {}", socket_address);

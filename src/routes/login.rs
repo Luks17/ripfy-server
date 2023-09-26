@@ -1,5 +1,5 @@
 use super::error::Result;
-use crate::{routes::error::Error, AppState};
+use crate::{middleware::auth::AUTH_TOKEN, routes::error::Error, AppState};
 use axum::{routing::post, Json, Router};
 use serde::Deserialize;
 use serde_json::{json, Value};
@@ -18,7 +18,7 @@ async fn login_handler(cookies: Cookies, payload: Json<LoginPayload>) -> Result<
         return Err(Error::LoginFailed);
     }
 
-    cookies.add(Cookie::new("auth-token", "user-1.exp.sig"));
+    cookies.add(Cookie::new(AUTH_TOKEN, "user-1.exp.sig"));
 
     Ok(Json(json!({
             "result": {

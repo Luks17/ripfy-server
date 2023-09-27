@@ -4,12 +4,43 @@ use super::{
 };
 use crate::context::Ctx;
 use async_trait::async_trait;
-use axum::{extract::FromRequestParts, http::request::Parts, RequestPartsExt};
+use axum::{
+    extract::FromRequestParts,
+    http::{request::Parts, Request},
+    middleware::Next,
+    response::Response,
+};
 use lazy_regex::regex_captures;
-use tower_cookies::Cookies;
+use tower_cookies::{Cookie, Cookies};
 
-/// Extracts cookie token from response header
-/// Implements FromRequestParts and not FromRequest because it does not need the request body
+/// Middleware for extracting token cookie from request header and returning a context
+pub async fn ctx_resolver<B>(
+    cookies: Cookies,
+    mut req: Request<B>,
+    next: Next<B>,
+) -> Result<Response> {
+    tracing::debug!("MIDDLEWARE - CTX_RESOLVER");
+
+    // extracts auth_token from cookies and parses it on the parse_token function
+    let (user_id, _expiration, _signature) = cookies
+        .get(AUTH_TOKEN)
+        .map(|c| c.value().to_string())
+        .ok_or(Error::AuthTokenRequired)
+        .and_then(parse_token)?;
+
+    // TODO: token validation
+    // If the client sends an invalid cookie, we want to remove it
+    if false {
+        cookies.remove(Cookie::named(AUTH_TOKEN))
+    }
+
+    // Store the ctx_result in the request extension.
+    req.extensions_mut().insert(Ctx::new(user_id));
+
+    Ok(next.run(req).await)
+}
+
+// Implements FromRequestParts and not FromRequest because it does not need the request body
 #[async_trait]
 impl<S> FromRequestParts<S> for Ctx
 where
@@ -18,19 +49,15 @@ where
     type Rejection = Error;
 
     /// Returns a result of a new instance of Ctx
+    /// Gets it from the request parts extensions after the ctx_resolver middleware stores it there
     async fn from_request_parts(parts: &mut Parts, _: &S) -> Result<Self> {
         tracing::debug!("MIDDLEWARE - EXTRACTOR - CTX");
 
-        let cookies = parts.extract::<Cookies>().await.unwrap();
-
-        let auth_token = cookies.get(AUTH_TOKEN).map(|c| c.value().to_string());
-
-        // Runs parse_token() on the auth_toke
-        let (user_id, _expiration, _sign) = auth_token
-            .ok_or(Error::AuthTokenRequired)
-            .and_then(parse_token)?;
-
-        Ok(Ctx::new(user_id))
+        parts
+            .extensions
+            .get::<Result<Ctx>>()
+            .ok_or(Error::CtxNotInRequestExtensions)?
+            .clone()
     }
 }
 

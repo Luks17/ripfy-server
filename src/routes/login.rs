@@ -1,5 +1,5 @@
 use super::error::Result;
-use crate::{middleware::auth::AUTH_TOKEN, routes::error::Error, AppState};
+use crate::{mw::auth::AUTH_TOKEN, routes::error::Error, AppState};
 use axum::{routing::post, Json, Router};
 use serde::Deserialize;
 use serde_json::{json, Value};

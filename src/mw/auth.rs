@@ -1,6 +1,6 @@
 use super::error::Result;
+pub use super::AUTH_TOKEN;
 use crate::context::Ctx;
-pub use crate::middleware::AUTH_TOKEN;
 use axum::{http::Request, middleware::Next, response::Response};
 
 // This middleware is useful to restrict access to routes only to authenticated users

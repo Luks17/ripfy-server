@@ -1,7 +1,6 @@
 pub mod conf;
 pub mod context;
 pub mod db;
-pub mod mw;
 pub mod routes;
 
 pub use conf::config;

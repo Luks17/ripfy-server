@@ -18,5 +18,7 @@ async fn client_mock() -> Result<()> {
 
     login.await?.print().await?;
 
+    client.do_get("/").await?.print().await?;
+
     Ok(())
 }

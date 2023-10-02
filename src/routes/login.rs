@@ -1,5 +1,5 @@
-use super::error::Result;
-use crate::{mw::auth::AUTH_TOKEN, routes::error::Error, AppState};
+use super::{error::Error, error::Result, mw::AUTH_TOKEN};
+use crate::AppState;
 use axum::{routing::post, Json, Router};
 use serde::Deserialize;
 use serde_json::{json, Value};
@@ -12,7 +12,7 @@ pub fn router(state: AppState) -> Router {
 }
 
 async fn login_handler(cookies: Cookies, payload: Json<LoginPayload>) -> Result<Json<Value>> {
-    tracing::info!("LOGIN HANDLER");
+    tracing::debug!("LOGIN HANDLER");
 
     if payload.username != "user" || payload.pwd != "passwd" {
         return Err(Error::LoginFailed);

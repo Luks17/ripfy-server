@@ -9,17 +9,24 @@ impl MigrationTrait for Migration {
         manager
             .create_table(
                 Table::create()
-                    .table(Song::Table)
+                    .table(User::Table)
                     .if_not_exists()
                     .col(
-                        ColumnDef::new(Song::Id)
+                        ColumnDef::new(User::Id)
                             .integer()
                             .not_null()
                             .auto_increment()
                             .primary_key(),
                     )
-                    .col(ColumnDef::new(Song::Title).string().not_null())
-                    .col(ColumnDef::new(Song::ArtistId).integer().not_null())
+                    .col(
+                        ColumnDef::new(User::Username)
+                            .string()
+                            .not_null()
+                            .unique_key(),
+                    )
+                    .col(ColumnDef::new(User::Passwd).string())
+                    .col(ColumnDef::new(User::PasswdSalt).uuid().not_null())
+                    .col(ColumnDef::new(User::TokenSalt).uuid().not_null())
                     .to_owned(),
             )
             .await
@@ -27,15 +34,17 @@ impl MigrationTrait for Migration {
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         manager
-            .drop_table(Table::drop().table(Song::Table).to_owned())
+            .drop_table(Table::drop().table(User::Table).to_owned())
             .await
     }
 }
 
 #[derive(DeriveIden)]
-enum Song {
+enum User {
     Table,
     Id,
-    Title,
-    ArtistId,
+    Username,
+    Passwd,
+    PasswdSalt,
+    TokenSalt,
 }

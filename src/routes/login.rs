@@ -1,5 +1,5 @@
 use super::{error::Error, error::Result, mw::AUTH_TOKEN};
-use crate::{helpers, AppState};
+use crate::{helpers, util::crypt::verify_encrypted_passwd, AppState};
 use axum::{extract::State, routing::post, Json, Router};
 use serde::Deserialize;
 use serde_json::{json, Value};
@@ -18,12 +18,18 @@ async fn login_handler(
 ) -> Result<Json<Value>> {
     tracing::debug!("LOGIN HANDLER");
 
-    let LoginPayload { username, pwd: _ } = payload;
+    let LoginPayload { username, pwd } = payload;
 
-    let _user = match helpers::user::first_by_username(&state, &username).await {
+    let user = match helpers::user::first_by_username(&state, &username).await {
         Ok(u) => u.ok_or(Error::UserNotFound)?,
         Err(_) => return Err(Error::DbQueryFailed),
     };
+
+    let is_passwd_correct = verify_encrypted_passwd(pwd, user.passwd.as_str())?;
+
+    if !is_passwd_correct {
+        return Err(Error::IncorrectPasswd);
+    }
 
     cookies.add(Cookie::new(AUTH_TOKEN, "user-1.exp.sig"));
 

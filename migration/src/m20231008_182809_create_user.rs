@@ -24,7 +24,7 @@ impl MigrationTrait for Migration {
                             .not_null()
                             .unique_key(),
                     )
-                    .col(ColumnDef::new(User::Passwd).string())
+                    .col(ColumnDef::new(User::Passwd).string().not_null())
                     .col(ColumnDef::new(User::PasswdSalt).uuid().not_null())
                     .col(ColumnDef::new(User::TokenSalt).uuid().not_null())
                     .to_owned(),

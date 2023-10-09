@@ -10,18 +10,25 @@ pub type Result<T> = core::result::Result<T, Error>;
 
 #[derive(Error, Clone, Debug)]
 pub enum Error {
-    #[error("Could not login user!")]
-    LoginFailed,
+    // AUTH
     #[error("No authentication token was provided in the request header!")]
     NoAuthToken,
     #[error("Token provided in header is in the wrong format!\nExpected the following format: 'user-[user-id].[expiration].[signature]'.")]
     AuthTokenWrongFormat,
     #[error("The context is missing from the request extension! Something may have gone wrong on the token validation.")]
     CtxNotInRequestExtensions,
-    #[error("Failed to execute the query in the database!")]
-    DbQueryFailed,
+
+    // LOGIN
     #[error("Entered user does not exist!")]
     UserNotFound,
+    #[error("Password does not match")]
+    IncorrectPasswd,
+
+    // INTERNAL
+    #[error("Failed to execute the query in the database!")]
+    DbQueryFailed,
+    #[error("Something went wrong while working with encryption!")]
+    CryptError(#[from] argon2::password_hash::Error),
 }
 
 impl IntoResponse for Error {
@@ -46,9 +53,10 @@ impl Error {
     /// Converts server error to client error and status code
     /// This method main purpose is to not send sensitive information to the client
     pub fn parse_server_error_to_client(&self) -> (StatusCode, ClientError) {
-        #[allow(unreachable_patterns)]
         match self {
-            Self::LoginFailed => (StatusCode::UNAUTHORIZED, ClientError::LOGIN_FAIL),
+            Self::IncorrectPasswd | Self::UserNotFound => {
+                (StatusCode::UNAUTHORIZED, ClientError::LOGIN_FAIL)
+            }
             Self::NoAuthToken | Self::AuthTokenWrongFormat | Self::CtxNotInRequestExtensions => {
                 (StatusCode::UNAUTHORIZED, ClientError::NO_AUTH)
             }

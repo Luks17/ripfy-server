@@ -1,6 +1,6 @@
 use super::{error::Error, error::Result, mw::AUTH_TOKEN};
-use crate::AppState;
-use axum::{routing::post, Json, Router};
+use crate::{helpers, AppState};
+use axum::{extract::State, routing::post, Json, Router};
 use serde::Deserialize;
 use serde_json::{json, Value};
 use tower_cookies::{Cookie, Cookies};
@@ -11,12 +11,19 @@ pub fn router(state: AppState) -> Router {
         .with_state(state)
 }
 
-async fn login_handler(cookies: Cookies, payload: Json<LoginPayload>) -> Result<Json<Value>> {
+async fn login_handler(
+    State(state): State<AppState>,
+    cookies: Cookies,
+    Json(payload): Json<LoginPayload>,
+) -> Result<Json<Value>> {
     tracing::debug!("LOGIN HANDLER");
 
-    if payload.username != "user" || payload.pwd != "passwd" {
-        return Err(Error::LoginFailed);
-    }
+    let LoginPayload { username, pwd: _ } = payload;
+
+    let _user = match helpers::user::first_by_username(&state, &username).await {
+        Ok(u) => u.ok_or(Error::UserNotFound)?,
+        Err(_) => return Err(Error::DbQueryFailed),
+    };
 
     cookies.add(Cookie::new(AUTH_TOKEN, "user-1.exp.sig"));
 

@@ -15,8 +15,9 @@ sea-orm = { version = "0.12.2", features = [
 serde = { version = "1.0.188", features = ["derive"] }
 
 [dependencies]
+entity = { path = "entity" }
 anyhow = "1.0.75"
-argon2 = "0.5.2"
+argon2 = { version = "0.5.2", features = ["std"] }
 async-trait = "0.1.73"
 axum = "0.6.20"
 figment = { version = "0.10.10", features = ["toml"] }

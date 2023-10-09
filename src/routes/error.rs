@@ -18,6 +18,10 @@ pub enum Error {
     AuthTokenWrongFormat,
     #[error("The context is missing from the request extension! Something may have gone wrong on the token validation.")]
     CtxNotInRequestExtensions,
+    #[error("Failed to execute the query in the database!")]
+    DbQueryFailed,
+    #[error("Entered user does not exist!")]
+    UserNotFound,
 }
 
 impl IntoResponse for Error {

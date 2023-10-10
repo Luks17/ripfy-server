@@ -1,3 +1,7 @@
+pub mod b64;
+pub mod error;
+pub mod token;
+
 use argon2::{
     password_hash::{Error, SaltString},
     Argon2, PasswordHash, PasswordHasher, PasswordVerifier,

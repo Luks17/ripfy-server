@@ -2,7 +2,7 @@ use super::{
     error::{Error, Result},
     Token, AUTH_TOKEN,
 };
-use crate::context::Ctx;
+use crate::{context::Ctx, crypt};
 use async_trait::async_trait;
 use axum::{
     extract::FromRequestParts,
@@ -76,10 +76,12 @@ fn parse_token(raw_token: String) -> Result<Token> {
         r#"^user-(\d+)\.(.+)\.(.+)"#, // a literal regex
         &raw_token
     )
-    .ok_or(Error::AuthTokenWrongFormat)?;
+    .ok_or(crypt::error::Error::TokenInvalidFormat)?;
 
     // if cannot parse the user_id to u64, then the authToken format must be invalid
-    let user_id: u64 = user_id.parse().map_err(|_| Error::AuthTokenWrongFormat)?;
+    let user_id: u64 = user_id
+        .parse()
+        .map_err(|_| crypt::error::Error::TokenInvalidFormat)?;
 
     Ok(Token(user_id, expiration.to_string(), sign.to_string()))
 }

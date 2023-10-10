@@ -19,6 +19,8 @@ pub fn config() -> &'static Config {
 #[derive(Deserialize, Serialize)]
 pub struct Config {
     pub db_location: String,
+    pub access_token_duration_secs: u32,
+    pub refresh_token_duration_secs: u32,
     pub port: u16,
 }
 
@@ -27,6 +29,8 @@ impl Default for Config {
     fn default() -> Self {
         Config {
             db_location: "ripfy.sqlite".into(),
+            access_token_duration_secs: 1800,    // 30 minutes
+            refresh_token_duration_secs: 604800, // 1 week
             port: 7717,
         }
     }

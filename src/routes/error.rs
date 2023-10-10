@@ -6,6 +6,8 @@ use axum::{
 use serde_json::json;
 use thiserror::Error;
 
+use crate::crypt;
+
 pub type Result<T> = core::result::Result<T, Error>;
 
 #[derive(Error, Clone, Debug)]
@@ -13,8 +15,8 @@ pub enum Error {
     // AUTH
     #[error("No authentication token was provided in the request header!")]
     NoAuthToken,
-    #[error("Token provided in header is in the wrong format!\nExpected the following format: 'user-[user-id].[expiration].[signature]'.")]
-    AuthTokenWrongFormat,
+    #[error(transparent)]
+    AuthTokenWrongFormat(#[from] crypt::error::Error),
     #[error("The context is missing from the request extension! Something may have gone wrong on the token validation.")]
     CtxNotInRequestExtensions,
 
@@ -57,9 +59,9 @@ impl Error {
             Self::IncorrectPasswd | Self::UserNotFound => {
                 (StatusCode::UNAUTHORIZED, ClientError::LOGIN_FAIL)
             }
-            Self::NoAuthToken | Self::AuthTokenWrongFormat | Self::CtxNotInRequestExtensions => {
-                (StatusCode::UNAUTHORIZED, ClientError::NO_AUTH)
-            }
+            Self::NoAuthToken
+            | Self::AuthTokenWrongFormat(..)
+            | Self::CtxNotInRequestExtensions => (StatusCode::UNAUTHORIZED, ClientError::NO_AUTH),
             _ => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 ClientError::SERVICE_ERROR,

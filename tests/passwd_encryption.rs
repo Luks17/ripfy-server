@@ -1,6 +1,6 @@
 use anyhow::Result;
 use argon2::password_hash::{rand_core::OsRng, SaltString};
-use ripfy_server::util::crypt::{passwd_encrypt, verify_encrypted_passwd};
+use ripfy_server::crypt::{passwd_encrypt, verify_encrypted_passwd};
 
 #[tokio::test]
 async fn encrypted_passwd() -> Result<()> {

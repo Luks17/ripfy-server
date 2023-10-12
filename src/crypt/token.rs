@@ -1,6 +1,6 @@
-use crate::{config, util::time::now_utc_plus_sec_str};
-
 use super::{b64, error::Error};
+use crate::{config, keys, util::time::now_utc_plus_sec_str};
+use rsa::{pkcs1v15::SigningKey, sha2::Sha512};
 use std::{fmt::Display, str::FromStr};
 
 #[derive(Debug)]
@@ -42,11 +42,12 @@ impl Display for Token {
 
 pub fn generate_access_token(user: &str, salt: &str) {
     let duration = config().access_token_duration_secs;
+    let key = &keys().signing_key;
 
-    create_token(user, duration, salt)
+    create_token(user, duration, salt, key)
 }
 
-fn create_token(identifier: &str, duration_secs: u64, _salt: &str) {
+fn create_token(identifier: &str, duration_secs: u64, _salt: &str, _key: &SigningKey<Sha512>) {
     let _identifier = identifier.to_string();
     let _exp = now_utc_plus_sec_str(duration_secs);
 }

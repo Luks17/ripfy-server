@@ -1,31 +1,28 @@
 pub mod b64;
 pub mod error;
 pub mod gen_key;
+pub mod passwd;
 pub mod token;
 
-use argon2::{
-    password_hash::{Error, SaltString},
-    Argon2, PasswordHash, PasswordHasher, PasswordVerifier,
+use self::error::Error;
+use rsa::{
+    pkcs1v15::{Signature, SigningKey},
+    sha2::Sha512,
+    signature::{RandomizedSigner, SignatureEncoding},
 };
 
-pub fn passwd_encrypt(passwd: impl Into<String>, salt: &str) -> Result<String, Error> {
-    let salt_string = SaltString::from_b64(salt)?;
+/// Receives a base64url encoded String slice and tries to decode and extract a signature of it if exists
+pub fn decode_signature(encoded_signature: &str) -> Result<Signature, Error> {
+    let signature: &[u8] = &b64::extract(encoded_signature)?;
+    let result = Signature::try_from(signature).map_err(|_| Error::SignParsingFailed)?;
 
-    let passwd_hash = Argon2::default().hash_password(passwd.into().as_bytes(), &salt_string)?;
-
-    Ok(passwd_hash.to_string())
+    Ok(result)
 }
 
-pub fn verify_encrypted_passwd(
-    provided_passwd: impl Into<String>,
-    hashed_passwd: &str,
-) -> Result<bool, Error> {
-    let parsed_hash = PasswordHash::new(hashed_passwd)?;
-    let verify_passwd = Argon2::default()
-        .verify_password(provided_passwd.into().as_bytes(), &parsed_hash)
-        .is_ok();
+/// Signs the content and return a base64url encoded String of the signature
+pub fn sign_content(content: String, key: &SigningKey<Sha512>) -> String {
+    let mut rng = rand::thread_rng();
+    let raw_signature = key.sign_with_rng(&mut rng, content.as_bytes());
 
-    Ok(verify_passwd)
+    b64::encode(raw_signature.to_bytes())
 }
-
-pub fn _sign_content(_key: String, _content: String) {}

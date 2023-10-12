@@ -1,5 +1,5 @@
 use super::{error::Error, error::Result, mw::AUTH_TOKEN};
-use crate::{crypt::verify_encrypted_passwd, helpers, AppState};
+use crate::{crypt::passwd::verify_encrypted_passwd, helpers, AppState};
 use axum::{extract::State, routing::post, Json, Router};
 use serde::Deserialize;
 use serde_json::{json, Value};

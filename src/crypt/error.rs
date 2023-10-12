@@ -9,4 +9,6 @@ pub enum Error {
     TokenInvalidFormat,
     #[error("Could not generate private key!")]
     KeyGenFailed,
+    #[error("An error ocurred while trying to parse bytes of signature to Signature!")]
+    SignParsingFailed,
 }

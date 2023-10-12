@@ -1,6 +1,6 @@
 use anyhow::Result;
 use axum::{middleware, routing, Router, Server};
-use ripfy_server::{config, db, routes, AppState};
+use ripfy_server::{config, db, keys, routes, AppState};
 use std::net::SocketAddr;
 use tower_cookies::CookieManagerLayer;
 use tracing_subscriber::EnvFilter;
@@ -11,6 +11,11 @@ async fn main() -> Result<()> {
         .pretty()
         .with_env_filter(EnvFilter::from_default_env())
         .init();
+
+    // makes sure the config and keys are available as early as possible, because they can panic if
+    // not loaded correctly
+    config();
+    keys();
 
     let db = db::connect().await?;
 

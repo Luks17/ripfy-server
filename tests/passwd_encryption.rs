@@ -2,8 +2,8 @@ use anyhow::Result;
 use argon2::password_hash::{rand_core::OsRng, SaltString};
 use ripfy_server::crypt::{passwd_encrypt, verify_encrypted_passwd};
 
-#[tokio::test]
-async fn encrypted_passwd() -> Result<()> {
+#[test]
+fn encrypted_passwd() -> Result<()> {
     let passwd = "abcde123";
     let salt = SaltString::generate(&mut OsRng).to_string();
 

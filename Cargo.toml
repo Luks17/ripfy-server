@@ -36,6 +36,8 @@ tracing-subscriber = { version = "0.3.17", features = ["env-filter"] }
 uuid = { version = "1.4.1", features = ["v4", "fast-rng"] }
 base64 = "0.21.4"
 time = "0.3.29"
+rand = "0.8.5"
+rsa = { version = "0.9.2", features = ["sha2"] }
 
 [dev-dependencies]
 httpc-test = "0.1.5"

@@ -1,3 +1,5 @@
+use crate::{config, util::time::now_utc_plus_sec_str};
+
 use super::{b64, error::Error};
 use std::{fmt::Display, str::FromStr};
 
@@ -36,4 +38,15 @@ impl Display for Token {
             &self.signature
         )
     }
+}
+
+pub fn generate_access_token(user: &str, salt: &str) {
+    let duration = config().access_token_duration_secs;
+
+    create_token(user, duration, salt)
+}
+
+fn create_token(identifier: &str, duration_secs: u64, _salt: &str) {
+    let _identifier = identifier.to_string();
+    let _exp = now_utc_plus_sec_str(duration_secs);
 }

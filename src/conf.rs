@@ -19,8 +19,8 @@ pub fn config() -> &'static Config {
 #[derive(Deserialize, Serialize)]
 pub struct Config {
     pub db_location: String,
-    pub access_token_duration_secs: u32,
-    pub refresh_token_duration_secs: u32,
+    pub access_token_duration_secs: u64,
+    pub refresh_token_duration_secs: u64,
     pub port: u16,
 }
 
@@ -41,6 +41,6 @@ impl Config {
         Figment::from(Serialized::defaults(Config::default()))
             .merge(Toml::file("conf.toml"))
             .extract()
-            .unwrap()
+            .unwrap_or_else(|_| panic!("FATAL - COULD NOT GET CONFIG!"))
     }
 }

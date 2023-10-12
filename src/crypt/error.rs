@@ -7,4 +7,6 @@ pub enum Error {
     DecodingError(#[from] DecodeError),
     #[error("Token provided in header is in the wrong format!\nExpected the following format: 'user-[user-id].[expiration].[signature]'.")]
     TokenInvalidFormat,
+    #[error("Could not generate private key!")]
+    KeyGenFailed,
 }

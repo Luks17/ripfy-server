@@ -1,5 +1,6 @@
 pub mod b64;
 pub mod error;
+pub mod gen_key;
 pub mod token;
 
 use argon2::{
@@ -26,3 +27,5 @@ pub fn verify_encrypted_passwd(
 
     Ok(verify_passwd)
 }
+
+pub fn _sign_content(_key: String, _content: String) {}

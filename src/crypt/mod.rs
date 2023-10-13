@@ -13,7 +13,7 @@ use rsa::{
 
 /// Receives a base64url encoded String slice and tries to decode and extract a signature of it if exists
 pub fn decode_signature(encoded_signature: &str) -> Result<Signature, Error> {
-    let signature: &[u8] = &b64::extract(encoded_signature)?;
+    let signature: &[u8] = &b64::decode(encoded_signature)?;
     let result = Signature::try_from(signature).map_err(|_| Error::SignParsingFailed)?;
 
     Ok(result)

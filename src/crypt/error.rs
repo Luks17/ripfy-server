@@ -1,3 +1,4 @@
+use crate::util;
 use base64::DecodeError;
 use thiserror::Error;
 
@@ -11,4 +12,10 @@ pub enum Error {
     KeyGenFailed,
     #[error("An error ocurred while trying to parse bytes of signature to Signature!")]
     SignParsingFailed,
+    #[error(transparent)]
+    FailedToGetTime(#[from] util::error::Error),
+    #[error("The provided token content does not match with the signature!")]
+    InvalidTokenSignature,
+    #[error("The provided token is expired!")]
+    ExpiredTokenError,
 }

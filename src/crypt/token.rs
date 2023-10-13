@@ -1,6 +1,13 @@
-use super::{b64, error::Error};
-use crate::{config, keys, util::time::now_utc_plus_sec_str};
-use rsa::{pkcs1v15::SigningKey, sha2::Sha512};
+use super::{b64, decode_signature, error::Error, sign_content};
+use crate::{
+    config, keys,
+    util::time::{now_utc, now_utc_plus_sec_str, parse_utc},
+};
+use rsa::{
+    pkcs1v15::{SigningKey, VerifyingKey},
+    sha2::Sha512,
+    signature::Verifier,
+};
 use std::{fmt::Display, str::FromStr};
 
 #[derive(Debug)]
@@ -21,8 +28,8 @@ impl FromStr for Token {
         let (identifier_b64u, expiration_b64u, signature_b64u) = (splits[0], splits[1], splits[2]);
 
         Ok(Self {
-            identifier: b64::decode(identifier_b64u)?,
-            expiration: b64::decode(expiration_b64u)?,
+            identifier: b64::decode_to_string(identifier_b64u)?,
+            expiration: b64::decode_to_string(expiration_b64u)?,
             signature: signature_b64u.to_string(),
         })
     }
@@ -40,14 +47,51 @@ impl Display for Token {
     }
 }
 
-pub fn generate_access_token(user: &str, salt: &str) {
-    let duration = config().access_token_duration_secs;
-    let key = &keys().signing_key;
+impl Token {
+    pub fn validate(&self, key: &VerifyingKey<Sha512>) -> Result<(), Error> {
+        let content = format!(
+            "{}.{}",
+            b64::encode(&self.identifier),
+            b64::encode(&self.expiration)
+        );
+        let signature = decode_signature(self.signature.as_str())?;
 
-    create_token(user, duration, salt, key)
-}
+        // validates signature
+        key.verify(content.as_bytes(), &signature)
+            .map_err(|_| Error::InvalidTokenSignature)?;
 
-fn create_token(identifier: &str, duration_secs: u64, _salt: &str, _key: &SigningKey<Sha512>) {
-    let _identifier = identifier.to_string();
-    let _exp = now_utc_plus_sec_str(duration_secs);
+        // checks expiration
+        let expiration_time = parse_utc(self.expiration.as_str())?;
+        let now = now_utc();
+
+        if expiration_time < now {
+            return Err(Error::ExpiredTokenError);
+        }
+
+        Ok(())
+    }
+
+    pub fn new_access_token(user: &str) -> Result<Self, Error> {
+        let duration = &config().access_token_duration_secs;
+        let key = &keys().signing_key;
+
+        let token = Self::new(user, duration, key)?;
+
+        Ok(token)
+    }
+
+    fn new(identifier: &str, duration_secs: &u64, key: &SigningKey<Sha512>) -> Result<Self, Error> {
+        let identifier = identifier.to_string();
+        let expiration = now_utc_plus_sec_str(duration_secs.clone())?;
+
+        let content = format!("{}.{}", b64::encode(&identifier), b64::encode(&expiration));
+
+        let signature = sign_content(content, key);
+
+        Ok(Self {
+            identifier,
+            expiration,
+            signature,
+        })
+    }
 }

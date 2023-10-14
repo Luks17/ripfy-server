@@ -24,7 +24,7 @@ async fn main() -> Result<()> {
     let app = Router::new()
         .route("/", routing::get(|| async { "Hello, World!" }))
         .merge(routes::login::router(state.clone()))
-        .layer(middleware::from_fn(routes::mw::cookies::ctx_resolver))
+        .layer(middleware::from_fn(routes::mw::ctx::ctx_resolver))
         .layer(CookieManagerLayer::new());
 
     let socket_address = SocketAddr::from(([0, 0, 0, 0], config().port));

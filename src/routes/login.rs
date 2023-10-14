@@ -1,9 +1,9 @@
-use super::{error::Error, error::Result, mw::AUTH_TOKEN};
+use super::{error::Error, error::Result, gen_and_set_token_cookie};
 use crate::{crypt::passwd::verify_encrypted_passwd, helpers, AppState};
 use axum::{extract::State, routing::post, Json, Router};
 use serde::Deserialize;
 use serde_json::{json, Value};
-use tower_cookies::{Cookie, Cookies};
+use tower_cookies::Cookies;
 
 pub fn router(state: AppState) -> Router {
     Router::new()
@@ -11,6 +11,9 @@ pub fn router(state: AppState) -> Router {
         .with_state(state)
 }
 
+/// Receives a payload of format: { username, passwd }
+/// Checks if user exists and it's password is correct
+/// If everything goes fine, generates an access token for said user and stores it on the cookies
 async fn login_handler(
     State(state): State<AppState>,
     cookies: Cookies,
@@ -31,7 +34,7 @@ async fn login_handler(
         return Err(Error::IncorrectPasswd);
     }
 
-    cookies.add(Cookie::new(AUTH_TOKEN, "user-1.exp.sig"));
+    gen_and_set_token_cookie(&cookies, &user.id).await?;
 
     Ok(Json(json!({
             "result": {

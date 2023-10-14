@@ -16,7 +16,7 @@ pub enum Error {
     #[error("No authentication token was provided in the request header!")]
     NoAuthToken,
     #[error(transparent)]
-    AuthTokenWrongFormat(#[from] crypt::error::Error),
+    TokenError(#[from] crypt::error::Error),
     #[error("The context is missing from the request extension! Something may have gone wrong on the token validation.")]
     CtxNotInRequestExtensions,
 
@@ -29,8 +29,8 @@ pub enum Error {
     // INTERNAL
     #[error("Failed to execute the query in the database!")]
     DbQueryFailed,
-    #[error("Something went wrong while working with encryption!")]
-    CryptError(#[from] argon2::password_hash::Error),
+    #[error("Something went wrong while working with password encryption!")]
+    PasswdCryptError(#[from] argon2::password_hash::Error),
 }
 
 impl IntoResponse for Error {
@@ -59,9 +59,9 @@ impl Error {
             Self::IncorrectPasswd | Self::UserNotFound => {
                 (StatusCode::UNAUTHORIZED, ClientError::LOGIN_FAIL)
             }
-            Self::NoAuthToken
-            | Self::AuthTokenWrongFormat(..)
-            | Self::CtxNotInRequestExtensions => (StatusCode::UNAUTHORIZED, ClientError::NO_AUTH),
+            Self::NoAuthToken | Self::TokenError(..) | Self::CtxNotInRequestExtensions => {
+                (StatusCode::UNAUTHORIZED, ClientError::NO_AUTH)
+            }
             _ => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 ClientError::SERVICE_ERROR,

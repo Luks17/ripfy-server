@@ -12,7 +12,7 @@ use std::{fmt::Display, str::FromStr};
 
 #[derive(Debug)]
 pub struct Token {
-    pub identifier: String,
+    pub identifier: String, // can be anything, an identifier number, an UUID, an unique username, etc
     pub expiration: String,
     pub signature: String, // base64_url_safe
 }

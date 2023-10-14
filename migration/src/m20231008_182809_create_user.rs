@@ -11,13 +11,7 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(User::Table)
                     .if_not_exists()
-                    .col(
-                        ColumnDef::new(User::Id)
-                            .integer()
-                            .not_null()
-                            .auto_increment()
-                            .primary_key(),
-                    )
+                    .col(ColumnDef::new(User::Id).uuid().not_null().primary_key())
                     .col(
                         ColumnDef::new(User::Username)
                             .string()
@@ -25,8 +19,6 @@ impl MigrationTrait for Migration {
                             .unique_key(),
                     )
                     .col(ColumnDef::new(User::Passwd).string().not_null())
-                    .col(ColumnDef::new(User::PasswdSalt).uuid().not_null())
-                    .col(ColumnDef::new(User::TokenSalt).uuid().not_null())
                     .to_owned(),
             )
             .await
@@ -45,6 +37,4 @@ enum User {
     Id,
     Username,
     Passwd,
-    PasswdSalt,
-    TokenSalt,
 }

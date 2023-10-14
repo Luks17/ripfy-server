@@ -3,13 +3,16 @@
 # requires cargo-watch to run
 # install with `cargo install cargo-watch` or with your package manager
 
-while getopts ":sc" opt; do
+while getopts ":sct" opt; do
   case $opt in
     s)
       cargo watch -q -c -w src/ -x run
       ;;
     c)
-      cargo watch -q -c -w tests/ -x "test -q client_mock -- --nocapture"
+      cargo watch -q -c -w tests/ -x "test -q client_mock -- --ignored --nocapture"
+      ;;
+    t)
+      cargo watch -q -c -w tests/ -x test
       ;;
     \?)
       printf "Invalid option: -$OPTARG. \nUse -c to watch the mock-client or -s to watch server instead!\n"

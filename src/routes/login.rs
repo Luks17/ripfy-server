@@ -1,9 +1,9 @@
-use super::error::Result;
-use crate::{middleware::auth::AUTH_TOKEN, routes::error::Error, AppState};
-use axum::{routing::post, Json, Router};
+use super::{error::Error, error::Result, gen_and_set_token_cookie};
+use crate::{crypt::passwd::verify_encrypted_passwd, helpers, AppState};
+use axum::{extract::State, routing::post, Json, Router};
 use serde::Deserialize;
 use serde_json::{json, Value};
-use tower_cookies::{Cookie, Cookies};
+use tower_cookies::Cookies;
 
 pub fn router(state: AppState) -> Router {
     Router::new()
@@ -11,14 +11,30 @@ pub fn router(state: AppState) -> Router {
         .with_state(state)
 }
 
-async fn login_handler(cookies: Cookies, payload: Json<LoginPayload>) -> Result<Json<Value>> {
-    tracing::info!("LOGIN HANDLER");
+/// Receives a payload of format: { username, passwd }
+/// Checks if user exists and it's password is correct
+/// If everything goes fine, generates an access token for said user and stores it on the cookies
+async fn login_handler(
+    State(state): State<AppState>,
+    cookies: Cookies,
+    Json(payload): Json<LoginPayload>,
+) -> Result<Json<Value>> {
+    tracing::debug!("LOGIN HANDLER");
 
-    if payload.username != "user" || payload.pwd != "passwd" {
-        return Err(Error::LoginFailed);
+    let LoginPayload { username, pwd } = payload;
+
+    let user = match helpers::user::first_by_username(&state, &username).await {
+        Ok(u) => u.ok_or(Error::UserNotFound)?,
+        Err(_) => return Err(Error::DbQueryFailed),
+    };
+
+    let is_passwd_correct = verify_encrypted_passwd(pwd, user.passwd.as_str())?;
+
+    if !is_passwd_correct {
+        return Err(Error::IncorrectPasswd);
     }
 
-    cookies.add(Cookie::new(AUTH_TOKEN, "user-1.exp.sig"));
+    gen_and_set_token_cookie(&cookies, &user.id).await?;
 
     Ok(Json(json!({
             "result": {

@@ -1,13 +1,21 @@
 use anyhow::Result;
-use axum::{routing, Router, Server};
-use ripfy_server::{config, db, routes, AppState};
+use axum::{middleware, routing, Router, Server};
+use ripfy_server::{config, db, keys, routes, AppState};
 use std::net::SocketAddr;
 use tower_cookies::CookieManagerLayer;
+use tracing_subscriber::EnvFilter;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let subscriber = tracing_subscriber::FmtSubscriber::new();
-    tracing::subscriber::set_global_default(subscriber)?;
+    tracing_subscriber::fmt()
+        .pretty()
+        .with_env_filter(EnvFilter::from_default_env())
+        .init();
+
+    // makes sure the config and keys are available as early as possible, because they can panic if
+    // not loaded correctly
+    config();
+    keys();
 
     let db = db::connect().await?;
 
@@ -16,6 +24,7 @@ async fn main() -> Result<()> {
     let app = Router::new()
         .route("/", routing::get(|| async { "Hello, World!" }))
         .merge(routes::login::router(state.clone()))
+        .layer(middleware::from_fn(routes::mw::ctx::ctx_resolver))
         .layer(CookieManagerLayer::new());
 
     let socket_address = SocketAddr::from(([0, 0, 0, 0], config().port));

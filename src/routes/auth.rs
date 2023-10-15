@@ -1,7 +1,7 @@
 use super::{error::Error, error::Result, gen_and_set_token_cookie};
 use crate::{
     crypt::passwd::{gen_salt, passwd_encrypt, verify_encrypted_passwd},
-    helpers, AppState,
+    db, AppState,
 };
 use axum::{extract::State, routing::post, Json, Router};
 use serde::Deserialize;
@@ -27,7 +27,7 @@ async fn login_handler(
 
     let AuthPayload { username, pwd } = payload;
 
-    let user = match helpers::user::first_by_username(&state, &username).await {
+    let user = match db::user::first_by_username(&state, &username).await {
         Ok(u) => u.ok_or(Error::UserNotFound)?,
         Err(_) => return Err(Error::DbSelectFailed),
     };
@@ -56,7 +56,7 @@ async fn signup_handler(
 
     let AuthPayload { username, pwd } = payload;
 
-    let user_already_exist = match helpers::user::first_by_username(&state, &username).await {
+    let user_already_exist = match db::user::first_by_username(&state, &username).await {
         Ok(u) => u.is_some(),
         Err(_) => return Err(Error::DbSelectFailed),
     };
@@ -67,7 +67,7 @@ async fn signup_handler(
 
     let hashed_pwd = passwd_encrypt(pwd, gen_salt().as_str())?;
 
-    helpers::user::create_new_user(&state, username, hashed_pwd)
+    db::user::create_new_user(&state, username, hashed_pwd)
         .await
         .map_err(|_| Error::DbInsertFailed)?;
 

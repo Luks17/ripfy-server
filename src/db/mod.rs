@@ -1,9 +1,9 @@
-use std::{fs, time::Duration};
-
-use anyhow::{Context, Result};
-use sea_orm::{ConnectOptions, Database, DatabaseConnection};
+pub mod user;
 
 use crate::config;
+use anyhow::{Context, Result};
+use sea_orm::{ConnectOptions, Database, DatabaseConnection};
+use std::{fs, time::Duration};
 
 /// Tries to connect to existing database
 pub async fn connect() -> Result<DatabaseConnection> {

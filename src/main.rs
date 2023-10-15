@@ -23,7 +23,7 @@ async fn main() -> Result<()> {
 
     let app = Router::new()
         .route("/", routing::get(|| async { "Hello, World!" }))
-        .merge(routes::login::router(state.clone()))
+        .merge(routes::auth::router(state.clone()))
         .layer(middleware::from_fn(routes::mw::ctx::ctx_resolver))
         .layer(CookieManagerLayer::new());
 

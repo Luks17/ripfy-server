@@ -1,11 +1,10 @@
 use std::time::Duration;
 
 use anyhow::Result;
-use argon2::password_hash::SaltString;
 use ripfy_server::{
     crypt::{
         b64, decode_signature,
-        passwd::{passwd_encrypt, verify_encrypted_passwd},
+        passwd::{gen_salt, passwd_encrypt, verify_encrypted_passwd},
         sign_content,
         token::Token,
     },
@@ -17,10 +16,8 @@ use rsa::signature::Verifier;
 #[test]
 fn encrypted_passwd() -> Result<()> {
     let passwd = "abcde123";
-    let mut rng = rand::thread_rng();
-    let salt = SaltString::generate(&mut rng).to_string();
 
-    let encrypted_passwd = passwd_encrypt(passwd, &salt)?;
+    let encrypted_passwd = passwd_encrypt(passwd, gen_salt().as_str())?;
     let do_passwords_match = verify_encrypted_passwd(passwd, &encrypted_passwd)?;
     let do_passwords_not_match = !verify_encrypted_passwd("ABCDE123", &encrypted_passwd)?;
 

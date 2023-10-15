@@ -1,5 +1,8 @@
 use super::{error::Error, error::Result, gen_and_set_token_cookie};
-use crate::{crypt::passwd::verify_encrypted_passwd, helpers, AppState};
+use crate::{
+    crypt::passwd::{gen_salt, passwd_encrypt, verify_encrypted_passwd},
+    helpers, AppState,
+};
 use axum::{extract::State, routing::post, Json, Router};
 use serde::Deserialize;
 use serde_json::{json, Value};
@@ -8,6 +11,7 @@ use tower_cookies::Cookies;
 pub fn router(state: AppState) -> Router {
     Router::new()
         .route("/api/login", post(login_handler))
+        .route("/api/signup", post(signup_handler))
         .with_state(state)
 }
 
@@ -17,15 +21,15 @@ pub fn router(state: AppState) -> Router {
 async fn login_handler(
     State(state): State<AppState>,
     cookies: Cookies,
-    Json(payload): Json<LoginPayload>,
+    Json(payload): Json<AuthPayload>,
 ) -> Result<Json<Value>> {
     tracing::debug!("LOGIN HANDLER");
 
-    let LoginPayload { username, pwd } = payload;
+    let AuthPayload { username, pwd } = payload;
 
     let user = match helpers::user::first_by_username(&state, &username).await {
         Ok(u) => u.ok_or(Error::UserNotFound)?,
-        Err(_) => return Err(Error::DbQueryFailed),
+        Err(_) => return Err(Error::DbSelectFailed),
     };
 
     let is_passwd_correct = verify_encrypted_passwd(pwd, user.passwd.as_str())?;
@@ -44,8 +48,39 @@ async fn login_handler(
     )))
 }
 
+async fn signup_handler(
+    State(state): State<AppState>,
+    Json(payload): Json<AuthPayload>,
+) -> Result<Json<Value>> {
+    tracing::debug!("SIGNUP HANDLER");
+
+    let AuthPayload { username, pwd } = payload;
+
+    let user_already_exist = match helpers::user::first_by_username(&state, &username).await {
+        Ok(u) => u.is_some(),
+        Err(_) => return Err(Error::DbSelectFailed),
+    };
+
+    if user_already_exist {
+        return Err(Error::UserAlreadyExists);
+    }
+
+    let hashed_pwd = passwd_encrypt(pwd, gen_salt().as_str())?;
+
+    helpers::user::create_new_user(&state, username, hashed_pwd)
+        .await
+        .map_err(|_| Error::DbInsertFailed)?;
+
+    Ok(Json(json!({
+            "result": {
+                "success": true
+            }
+        }
+    )))
+}
+
 #[derive(Debug, Deserialize)]
-struct LoginPayload {
+struct AuthPayload {
     username: String,
     pwd: String,
 }

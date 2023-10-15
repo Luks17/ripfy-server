@@ -1,5 +1,5 @@
+pub mod auth;
 mod error;
-pub mod login;
 pub mod mw;
 
 use crate::crypt::token::Token;

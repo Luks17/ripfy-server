@@ -26,9 +26,15 @@ pub enum Error {
     #[error("Password does not match")]
     IncorrectPasswd,
 
+    // SIGNUP
+    #[error("User with that name already exists!")]
+    UserAlreadyExists,
+
     // INTERNAL
-    #[error("Failed to execute the query in the database!")]
-    DbQueryFailed,
+    #[error("Failed to execute the insert query in the database!")]
+    DbInsertFailed,
+    #[error("Failed to execute the select query in the database!")]
+    DbSelectFailed,
     #[error("Something went wrong while working with password encryption!")]
     PasswdCryptError(#[from] argon2::password_hash::Error),
 }
@@ -62,6 +68,7 @@ impl Error {
             Self::NoAuthToken | Self::TokenError(..) | Self::CtxNotInRequestExtensions => {
                 (StatusCode::UNAUTHORIZED, ClientError::NO_AUTH)
             }
+            Self::UserAlreadyExists => (StatusCode::CONFLICT, ClientError::USERNAME_ALREADY_USED),
             _ => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 ClientError::SERVICE_ERROR,
@@ -77,4 +84,5 @@ pub enum ClientError {
     NO_AUTH,
     INVALID_PARAMS,
     SERVICE_ERROR,
+    USERNAME_ALREADY_USED,
 }

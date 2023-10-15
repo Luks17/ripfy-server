@@ -1,7 +1,9 @@
 use super::{error::Error, error::Result, gen_and_set_token_cookie};
 use crate::{
     crypt::passwd::{gen_salt, passwd_encrypt, verify_encrypted_passwd},
-    db, AppState,
+    db,
+    routes::remove_token_cookie,
+    AppState,
 };
 use axum::{extract::State, routing::post, Json, Router};
 use serde::Deserialize;
@@ -12,6 +14,7 @@ pub fn router(state: AppState) -> Router {
     Router::new()
         .route("/api/login", post(login_handler))
         .route("/api/signup", post(signup_handler))
+        .route("/api/logout", post(logout_handler))
         .with_state(state)
 }
 
@@ -79,8 +82,31 @@ async fn signup_handler(
     )))
 }
 
+async fn logout_handler(
+    cookies: Cookies,
+    Json(payload): Json<LogoutPayload>,
+) -> Result<Json<Value>> {
+    tracing::debug!("LOGOUT HANDLER");
+
+    if payload.logoff {
+        remove_token_cookie(&cookies).await;
+    }
+
+    Ok(Json(json!({
+            "result": {
+                "logged_off": payload.logoff
+            }
+        }
+    )))
+}
+
 #[derive(Debug, Deserialize)]
 struct AuthPayload {
     username: String,
     pwd: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct LogoutPayload {
+    logoff: bool,
 }

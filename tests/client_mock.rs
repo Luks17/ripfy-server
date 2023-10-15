@@ -31,5 +31,16 @@ async fn client_mock() -> Result<()> {
 
     client.do_get("/").await?.print().await?;
 
+    let logout = client.do_post(
+        "/api/logout",
+        json!({
+        "logoff": true
+        }),
+    );
+
+    logout.await?.print().await?;
+
+    client.do_get("/").await?.print().await?;
+
     Ok(())
 }

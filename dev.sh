@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# if RUST_LOG env variable is not set, it is setted as info
+if [[ -z "${RUST_LOG}" ]]; then
+  export RUST_LOG="ripfy_server=info"
+fi
+
 # requires cargo-watch to run
 # install with `cargo install cargo-watch` or with your package manager
 

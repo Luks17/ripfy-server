@@ -22,3 +22,9 @@ pub fn verify_encrypted_passwd(
 
     Ok(verify_passwd)
 }
+
+/// Generates random salt with thread rng and returns it as a String
+pub fn gen_salt() -> String {
+    let mut rng = rand::thread_rng();
+    SaltString::generate(&mut rng).to_string()
+}

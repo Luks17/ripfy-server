@@ -1,9 +1,7 @@
-use super::{error::Error, error::Result, gen_and_set_token_cookie};
+use super::{error::Error, error::Result, gen_and_set_token_cookie, remove_token_cookie};
 use crate::{
     crypt::passwd::{gen_salt, passwd_encrypt, verify_encrypted_passwd},
-    db,
-    routes::remove_token_cookie,
-    AppState,
+    db, AppState,
 };
 use axum::{extract::State, routing::post, Json, Router};
 use serde::Deserialize;

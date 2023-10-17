@@ -1,6 +1,6 @@
 use anyhow::Result;
 use axum::{middleware, routing, Router, Server};
-use ripfy_server::{config, db, keys, routes, AppState};
+use ripfy_server::{api, config, db, keys, AppState};
 use std::net::SocketAddr;
 use tower_cookies::CookieManagerLayer;
 use tracing_subscriber::EnvFilter;
@@ -23,8 +23,8 @@ async fn main() -> Result<()> {
 
     let app = Router::new()
         .route("/", routing::get(|| async { "Hello, World!" }))
-        .merge(routes::auth::router(state.clone()))
-        .layer(middleware::from_fn(routes::mw::ctx::ctx_resolver))
+        .merge(api::auth::router(state.clone()))
+        .layer(middleware::from_fn(api::mw::ctx::ctx_resolver))
         .layer(CookieManagerLayer::new());
 
     let socket_address = SocketAddr::from(([0, 0, 0, 0], config().port));

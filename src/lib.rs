@@ -1,8 +1,8 @@
+pub mod api;
 pub mod conf;
 pub mod context;
 pub mod crypt;
 pub mod db;
-pub mod routes;
 pub mod util;
 
 pub use conf::config;

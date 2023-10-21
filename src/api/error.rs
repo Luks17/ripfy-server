@@ -20,9 +20,25 @@ pub enum Error {
     #[error("The context is missing from the request extension! Something may have gone wrong on the token validation.")]
     CtxNotInRequestExtensions,
 
-    // LOGIN
+    // DB
     #[error("Entered user does not exist!")]
     UserNotFound,
+    #[error("Entered song does not exist")]
+    SongNotFound,
+    #[error("Failed to execute the insert query in the database!")]
+    DbInsertFailed,
+    #[error("Failed to execute the select query in the database!")]
+    DbSelectFailed,
+    #[error("Failed to execute the update query in the database!")]
+    DbUpdateFailded,
+
+    // API
+    #[error("An invalid REST parameter is in the URL")]
+    InvalidRestParameter,
+    #[error("The request payload is invalid!\nReason: {0}")]
+    InvalidPayload(String),
+
+    // Login
     #[error("Password does not match")]
     IncorrectPasswd,
 
@@ -31,10 +47,6 @@ pub enum Error {
     UserAlreadyExists,
 
     // INTERNAL
-    #[error("Failed to execute the insert query in the database!")]
-    DbInsertFailed,
-    #[error("Failed to execute the select query in the database!")]
-    DbSelectFailed,
     #[error("Something went wrong while working with password encryption!")]
     PasswdCryptError(#[from] argon2::password_hash::Error),
 }

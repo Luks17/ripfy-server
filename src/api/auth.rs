@@ -80,19 +80,14 @@ async fn signup_handler(
     )))
 }
 
-async fn logout_handler(
-    cookies: Cookies,
-    Json(payload): Json<LogoutPayload>,
-) -> Result<Json<Value>> {
+async fn logout_handler(cookies: Cookies) -> Result<Json<Value>> {
     tracing::debug!("LOGOUT HANDLER");
 
-    if payload.logoff {
-        remove_token_cookie(&cookies).await;
-    }
+    remove_token_cookie(&cookies).await;
 
     Ok(Json(json!({
             "result": {
-                "logged_off": payload.logoff
+                "logged_off": true
             }
         }
     )))
@@ -102,9 +97,4 @@ async fn logout_handler(
 struct AuthPayload {
     username: String,
     pwd: String,
-}
-
-#[derive(Debug, Deserialize)]
-struct LogoutPayload {
-    logoff: bool,
 }

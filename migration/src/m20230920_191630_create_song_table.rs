@@ -11,14 +11,14 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(Song::Table)
                     .if_not_exists()
+                    .col(ColumnDef::new(Song::Id).string().not_null().primary_key())
+                    .col(ColumnDef::new(Song::Title).string().not_null())
                     .col(
-                        ColumnDef::new(Song::Id)
+                        ColumnDef::new(Song::Downloads)
                             .integer()
                             .not_null()
-                            .auto_increment()
-                            .primary_key(),
+                            .default(1),
                     )
-                    .col(ColumnDef::new(Song::Title).string().not_null())
                     .col(ColumnDef::new(Song::ArtistId).integer().not_null())
                     .to_owned(),
             )
@@ -37,5 +37,6 @@ enum Song {
     Table,
     Id,
     Title,
+    Downloads,
     ArtistId,
 }

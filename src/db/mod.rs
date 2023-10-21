@@ -1,3 +1,4 @@
+pub mod song;
 pub mod user;
 
 use crate::config;

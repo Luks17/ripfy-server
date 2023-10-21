@@ -4,4 +4,6 @@ use thiserror::Error;
 pub enum Error {
     #[error("Something went wrong while parsing/formatting time")]
     TimeError,
+    #[error("The provided link is invalid")]
+    InvalidLink,
 }

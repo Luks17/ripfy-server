@@ -10,9 +10,9 @@ use tower_cookies::Cookies;
 
 pub fn router(state: AppState) -> Router {
     Router::new()
-        .route("/api/login", post(login_handler))
-        .route("/api/signup", post(signup_handler))
-        .route("/api/logout", post(logout_handler))
+        .route("/login", post(login_handler))
+        .route("/signup", post(signup_handler))
+        .route("/logout", post(logout_handler))
         .with_state(state)
 }
 

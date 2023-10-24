@@ -1,5 +1,5 @@
 use anyhow::Result;
-use axum::{middleware, routing, Router, Server};
+use axum::{middleware, Router, Server};
 use ripfy_server::{api, config, db, keys, AppState};
 use std::net::SocketAddr;
 use tower_cookies::CookieManagerLayer;
@@ -12,8 +12,8 @@ async fn main() -> Result<()> {
         .with_env_filter(EnvFilter::from_default_env())
         .init();
 
-    // makes sure the config and keys are available as early as possible, because they can panic if
-    // not loaded correctly
+    // Since rust loads stuff lazily, we need to make sure the config and keys are available as early as possible,
+    // because they can panic if not loaded correctly
     config();
     keys();
 
@@ -21,9 +21,13 @@ async fn main() -> Result<()> {
 
     let state = AppState { db };
 
+    let routes_rest = Router::new()
+        .merge(api::song::router(state.clone()))
+        .route_layer(middleware::from_fn(api::mw::ctx::ctx_require_auth));
+
     let app = Router::new()
-        .route("/", routing::get(|| async { "Hello, World!" }))
-        .merge(api::auth::router(state.clone()))
+        .nest("/api", api::auth::router(state.clone()))
+        .nest("/api", routes_rest)
         .layer(middleware::from_fn(api::mw::ctx::ctx_resolver))
         .layer(CookieManagerLayer::new());
 

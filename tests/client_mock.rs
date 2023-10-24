@@ -7,7 +7,14 @@ use serde_json::json;
 async fn client_mock() -> Result<()> {
     let client = httpc_test::new_client(format!("http://localhost:{}", config().port))?;
 
-    client.do_get("/").await?.print().await?;
+    let add_song = client.do_post(
+        "/api/songs",
+        json!({
+        "link": "https://youtu.be/fJ9rUzIMcZQ?si=RfOiwzgyIWE6XQb9"
+        }),
+    );
+
+    add_song.await?.print().await?;
 
     let signup = client.do_post(
         "/api/signup",
@@ -29,7 +36,14 @@ async fn client_mock() -> Result<()> {
 
     login.await?.print().await?;
 
-    client.do_get("/").await?.print().await?;
+    let add_song = client.do_post(
+        "/api/songs",
+        json!({
+        "link": "https://youtu.be/fJ9rUzIMcZQ?si=RfOiwzgyIWE6XQb9"
+        }),
+    );
+
+    add_song.await?.print().await?;
 
     let logout = client.do_post(
         "/api/logout",
@@ -39,8 +53,6 @@ async fn client_mock() -> Result<()> {
     );
 
     logout.await?.print().await?;
-
-    client.do_get("/").await?.print().await?;
 
     Ok(())
 }

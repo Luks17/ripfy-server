@@ -3,6 +3,7 @@ use super::{
     ModelResponse,
 };
 use crate::{
+    context::Ctx,
     db,
     util::{
         link::parse_yt_link,
@@ -28,6 +29,7 @@ pub fn router(state: AppState) -> Router {
 
 async fn get_song_handler(
     State(state): State<AppState>,
+    _ctx: Ctx,
     Path(id): Path<String>,
 ) -> Result<Json<Value>> {
     tracing::debug!("GET SONG HANDLER");
@@ -47,6 +49,7 @@ async fn get_song_handler(
 /// or actually downloaded
 async fn add_song_handler(
     State(state): State<AppState>,
+    _ctx: Ctx,
     Json(payload): Json<NewSongPayload>,
 ) -> Result<Json<Value>> {
     tracing::debug!("ADD SONG HANDLER");

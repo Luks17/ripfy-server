@@ -49,6 +49,8 @@ pub enum Error {
     // INTERNAL
     #[error("Something went wrong while working with password encryption!")]
     PasswdCryptError(#[from] argon2::password_hash::Error),
+    #[error("Something went wrong running the yt-dlp process!\nReason: {0}")]
+    YtDlpError(String),
 }
 
 impl IntoResponse for Error {

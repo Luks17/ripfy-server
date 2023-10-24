@@ -19,7 +19,7 @@ impl MigrationTrait for Migration {
                             .not_null()
                             .default(1),
                     )
-                    .col(ColumnDef::new(Song::ArtistId).integer().not_null())
+                    .col(ColumnDef::new(Song::Channel).string().not_null())
                     .to_owned(),
             )
             .await
@@ -38,5 +38,5 @@ enum Song {
     Id,
     Title,
     Downloads,
-    ArtistId,
+    Channel,
 }

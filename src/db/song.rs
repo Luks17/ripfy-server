@@ -14,14 +14,14 @@ pub async fn create_new_song(
     state: &AppState,
     link_id: &str,
     title: &str,
-    artist_id: i32,
+    channel: &str,
 ) -> Result<song::Model, DbErr> {
     let db = &state.db;
 
     let new_song = song::ActiveModel {
         id: ActiveValue::Set(link_id.to_string()),
         title: ActiveValue::Set(title.to_string()),
-        artist_id: ActiveValue::Set(artist_id),
+        channel: ActiveValue::Set(channel.to_string()),
         ..Default::default()
     };
 

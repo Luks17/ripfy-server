@@ -2,7 +2,14 @@ use super::{
     error::{Error, Result},
     ModelResponse,
 };
-use crate::{db, util::link::parse_yt_link, AppState};
+use crate::{
+    db,
+    util::{
+        link::parse_yt_link,
+        yt_dlp::{YtDlp, YtDlpResult},
+    },
+    AppState,
+};
 use axum::{
     extract::{Path, State},
     routing::{get, post},
@@ -62,8 +69,13 @@ async fn add_song_handler(
         })));
     }
 
-    // TODO: Implement actual title resolver from yt link and artist generation
-    let new_song = db::song::create_new_song(&state, &id, "test", 123)
+    let process = YtDlp::default();
+    let YtDlpResult { channel, fulltitle } = process
+        .run_no_download(&id)
+        .await
+        .map_err(|e| Error::YtDlpError(e.to_string()))?;
+
+    let new_song = db::song::create_new_song(&state, &id, &fulltitle, &channel)
         .await
         .map_err(|_| Error::DbInsertFailed)?;
 

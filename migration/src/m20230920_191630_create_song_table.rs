@@ -13,12 +13,6 @@ impl MigrationTrait for Migration {
                     .if_not_exists()
                     .col(ColumnDef::new(Song::Id).string().not_null().primary_key())
                     .col(ColumnDef::new(Song::Title).string().not_null())
-                    .col(
-                        ColumnDef::new(Song::Downloads)
-                            .integer()
-                            .not_null()
-                            .default(1),
-                    )
                     .col(ColumnDef::new(Song::Channel).string().not_null())
                     .to_owned(),
             )
@@ -33,10 +27,9 @@ impl MigrationTrait for Migration {
 }
 
 #[derive(DeriveIden)]
-enum Song {
+pub enum Song {
     Table,
     Id,
     Title,
-    Downloads,
     Channel,
 }

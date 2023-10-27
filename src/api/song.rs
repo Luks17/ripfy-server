@@ -45,8 +45,7 @@ async fn get_song_handler(
 }
 
 /// Tries to add a new song to the database and download it.
-/// If the song already exists, the song download count increases by 1 and no new song is created
-/// or actually downloaded
+/// If the song already exists, no new song is created or actually downloaded
 async fn add_song_handler(
     State(state): State<AppState>,
     _ctx: Ctx,
@@ -61,12 +60,7 @@ async fn add_song_handler(
         .await
         .map_err(|_| Error::DbSelectFailed)?;
 
-    // Download count for existing sound gets increased by 1 and exites handler early
     if let Some(song) = song_option {
-        let song = db::song::add_or_subtract_downloads(&state, song, true)
-            .await
-            .map_err(|_| Error::DbUpdateFailded)?;
-
         return Ok(Json(json!(ModelResponse {
             data: Song { ..song },
         })));

@@ -30,7 +30,9 @@ pub enum Error {
     #[error("Failed to execute the select query in the database!")]
     DbSelectFailed,
     #[error("Failed to execute the update query in the database!")]
-    DbUpdateFailded,
+    DbUpdateFailed,
+    #[error("Failed to execute the delete query in the database!")]
+    DbDeleteFailed,
 
     // API
     #[error("An invalid REST parameter is in the URL")]

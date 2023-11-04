@@ -1,3 +1,4 @@
+pub mod junctions;
 pub mod song;
 pub mod user;
 

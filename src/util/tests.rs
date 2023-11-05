@@ -1,8 +1,8 @@
-use anyhow::Result;
-use ripfy_server::util::{
+use super::{
     link::parse_yt_link,
     yt_dlp::{YtDlp, YtDlpResult},
 };
+use anyhow::Result;
 
 #[test]
 fn match_link() -> Result<()> {

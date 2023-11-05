@@ -26,3 +26,6 @@ pub fn sign_content(content: String, key: &SigningKey<Sha512>) -> String {
 
     b64::encode(raw_signature.to_bytes())
 }
+
+#[cfg(test)]
+mod tests;

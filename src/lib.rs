@@ -1,4 +1,3 @@
-pub mod _dev;
 pub mod api;
 pub mod conf;
 pub mod context;

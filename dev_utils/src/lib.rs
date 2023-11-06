@@ -1,11 +1,17 @@
-use crate::{build_app, config, db, keys, AppState};
 use anyhow::Result;
 use migration::{Migrator, MigratorTrait};
+use ripfy_server::{build_app, config, db, keys, AppState};
 use sea_orm::Database;
 use std::net::SocketAddr;
+use tracing_subscriber::EnvFilter;
 
 /// Used for integration tests
-pub async fn build_test_app(use_demo_users: bool, addr: SocketAddr) -> Result<()> {
+pub async fn build_test_app(use_demo_users: bool) -> Result<()> {
+    tracing_subscriber::fmt()
+        .pretty()
+        .with_env_filter(EnvFilter::from_default_env())
+        .init();
+
     tracing::info!("BUILDING TEST APP");
 
     let db = Database::connect("sqlite::memory:").await?;
@@ -21,15 +27,17 @@ pub async fn build_test_app(use_demo_users: bool, addr: SocketAddr) -> Result<()
     config();
     keys();
 
+    let socket_addr = SocketAddr::from(([0, 0, 0, 0], config().port));
+
     tokio::spawn(async move {
-        axum::Server::bind(&addr)
+        axum::Server::bind(&socket_addr)
             .serve(build_app(state).into_make_service())
             .await?;
 
         Ok::<(), anyhow::Error>(())
     });
 
-    tracing::info!("Listening on {}", addr);
+    tracing::info!("Listening on {}", socket_addr);
 
     Ok(())
 }

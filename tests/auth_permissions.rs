@@ -1,19 +1,12 @@
 use anyhow::Result;
 use axum::http::StatusCode;
-use ripfy_server::{_dev::build_test_app, config};
+use dev_utils::build_test_app;
+use ripfy_server::config;
 use serde_json::json;
-use std::net::SocketAddr;
-use tracing_subscriber::EnvFilter;
 
 #[tokio::test]
 async fn auth_permissions_integration_test() -> Result<()> {
-    tracing_subscriber::fmt()
-        .pretty()
-        .with_env_filter(EnvFilter::from_default_env())
-        .init();
-
-    let socket_address = SocketAddr::from(([0, 0, 0, 0], config().port));
-    build_test_app(false, socket_address).await?;
+    build_test_app(false).await?;
 
     let client = httpc_test::new_client(format!("http://localhost:{}", config().port))?;
 

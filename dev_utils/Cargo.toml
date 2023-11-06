@@ -1,0 +1,19 @@
+[package]
+name = "dev_utils"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+name = "dev_utils"
+path = "src/lib.rs"
+
+[dependencies]
+ripfy-server = { path = "../." }
+tokio = { workspace = true }
+anyhow = { workspace = true }
+migration = { workspace = true }
+sea-orm = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+axum = { workspace = true }

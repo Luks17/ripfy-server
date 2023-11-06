@@ -68,7 +68,7 @@ async fn signup_handler(
 
     let hashed_pwd = passwd_encrypt(pwd, gen_salt().as_str())?;
 
-    db::user::create_new_user(&state, username, hashed_pwd)
+    db::user::create_new_user(&state, &username, &hashed_pwd)
         .await
         .map_err(|_| Error::DbInsertFailed)?;
 

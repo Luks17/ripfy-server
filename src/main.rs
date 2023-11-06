@@ -1,5 +1,4 @@
 use anyhow::Result;
-use axum::Server;
 use ripfy_server::{build_app, config, db, keys, AppState};
 use std::net::SocketAddr;
 use tracing_subscriber::EnvFilter;
@@ -24,7 +23,7 @@ async fn main() -> Result<()> {
     let socket_address = SocketAddr::from(([0, 0, 0, 0], config().port));
     tracing::info!("Listening on {}", socket_address);
 
-    Server::bind(&socket_address)
+    axum::Server::bind(&socket_address)
         .serve(app.into_make_service())
         .await?;
 

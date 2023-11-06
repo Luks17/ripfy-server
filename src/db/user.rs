@@ -17,17 +17,13 @@ pub async fn first_by_username(
     Ok(user)
 }
 
-pub async fn create_new_user(
-    state: &AppState,
-    username: String,
-    passwd: String,
-) -> Result<(), DbErr> {
+pub async fn create_new_user(state: &AppState, username: &str, passwd: &str) -> Result<(), DbErr> {
     let db = &state.db;
 
     let new_user = user::ActiveModel {
         id: ActiveValue::Set(uuid::Uuid::new_v4().to_string()),
-        username: ActiveValue::Set(username),
-        passwd: ActiveValue::Set(passwd),
+        username: ActiveValue::Set(username.to_string()),
+        passwd: ActiveValue::Set(passwd.to_string()),
     };
 
     user::Entity::insert(new_user).exec(db).await?;

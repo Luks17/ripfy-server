@@ -16,6 +16,7 @@ serde = { version = "1.0.188", features = ["derive"] }
 
 [dependencies]
 entity = { path = "entity" }
+migration = { path = "migration" }
 anyhow = "1.0.75"
 argon2 = { version = "0.5.2", features = ["std"] }
 async-trait = "0.1.73"

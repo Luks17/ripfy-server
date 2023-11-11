@@ -19,15 +19,15 @@ async fn auth_permissions_integration_test() -> Result<()> {
 
     assert_eq!(add_song.await?.status(), StatusCode::UNAUTHORIZED);
 
-    let signup = client.do_post(
-        "/api/signup",
-        json!({
-        "username": "user",
-        "pwd": "passwd",
-        }),
-    );
-
-    signup.await?;
+    client
+        .do_post(
+            "/api/signup",
+            json!({
+            "username": "user",
+            "pwd": "passwd",
+            }),
+        )
+        .await?;
 
     let login = client.do_post(
         "/api/login",
@@ -48,14 +48,14 @@ async fn auth_permissions_integration_test() -> Result<()> {
 
     assert_eq!(add_song.await?.status(), StatusCode::OK);
 
-    let logout = client.do_post(
-        "/api/logout",
-        json!({
-        "logoff": true
-        }),
-    );
-
-    logout.await?;
+    client
+        .do_post(
+            "/api/logout",
+            json!({
+            "logoff": true
+            }),
+        )
+        .await?;
 
     let add_song = client.do_post(
         "/api/songs",

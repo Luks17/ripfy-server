@@ -28,14 +28,17 @@ pub fn router(state: AppState) -> Router {
         .with_state(state)
 }
 
+/// Returns a song if the user that made the request previously requested it
+///
+/// WILL NOT return a song owned by another user
 async fn get_song_handler(
     State(state): State<AppState>,
-    _ctx: Ctx,
+    ctx: Ctx,
     Path(id): Path<String>,
 ) -> Result<Json<Value>> {
     tracing::debug!("GET SONG HANDLER");
 
-    let song = match db::song::first_by_id(&state, &id).await {
+    let song = match db::song::first_by_id(&state, &id, &ctx.user_id()).await {
         Ok(song) => song.ok_or(Error::SongNotFound)?,
         Err(_) => return Err(Error::DbSelectFailed),
     };
@@ -46,7 +49,8 @@ async fn get_song_handler(
 }
 
 /// Tries to add a new song to the database and download it.
-/// Also creates a junction table that links the song to the user that requested it
+/// Also creates a junction table that links the song to the user that requested it, so the user
+/// can "own" the song
 ///
 /// If the song already exists, no new song is created or actually downloaded, but instead the song
 /// is just linked to the user by a junction table
@@ -58,15 +62,15 @@ async fn add_song_handler(
     tracing::debug!("ADD SONG HANDLER");
 
     let SongPayload { link } = payload;
-    let id = parse_yt_link(&link).map_err(|e| Error::InvalidPayload(e.to_string()))?;
+    let song_id = parse_yt_link(&link).map_err(|e| Error::InvalidPayload(e.to_string()))?;
 
-    let song_option = db::song::first_by_id(&state, &id)
+    let song_option = db::song::first_by_id(&state, &song_id, &ctx.user_id())
         .await
         .map_err(|_| Error::DbSelectFailed)?;
 
     // Exits early and creates user_song junction table for the song and user that requested it
     if let Some(song) = song_option {
-        db::junctions::user_song::create_new(&state, &ctx.user_id(), &id)
+        db::junctions::user_song::create_new(&state, &ctx.user_id(), &song_id)
             .await
             .map_err(|_| Error::DbInsertFailed)?;
 
@@ -77,11 +81,11 @@ async fn add_song_handler(
 
     let process = YtDlp::default();
     let YtDlpResult { channel, fulltitle } = process
-        .run_no_download(&id)
+        .run_no_download(&song_id)
         .await
         .map_err(|e| Error::YtDlpError(e.to_string()))?;
 
-    let new_song = db::song::create_new(&state, &id, &fulltitle, &channel, &ctx.user_id())
+    let new_song = db::song::create_new(&state, &song_id, &fulltitle, &channel, &ctx.user_id())
         .await
         .map_err(|_| Error::DbInsertFailed)?;
 
@@ -95,11 +99,9 @@ async fn add_song_handler(
 async fn remove_song_handler(
     State(state): State<AppState>,
     ctx: Ctx,
-    Json(payload): Json<SongPayload>,
+    Path(song_id): Path<String>,
 ) -> Result<Json<Value>> {
     tracing::debug!("REMOVE SONG HANDLER");
-
-    let SongPayload { link: song_id } = payload;
 
     // removes junction table
     db::junctions::user_song::delete(&state, &ctx.user_id(), &song_id)

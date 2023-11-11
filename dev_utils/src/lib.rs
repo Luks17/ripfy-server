@@ -1,6 +1,10 @@
 use anyhow::Result;
 use migration::{Migrator, MigratorTrait};
-use ripfy_server::{build_app, config, db, keys, AppState};
+use ripfy_server::{
+    build_app, config,
+    crypt::passwd::{gen_salt, passwd_encrypt},
+    db, keys, AppState,
+};
 use sea_orm::Database;
 use std::net::SocketAddr;
 use tracing_subscriber::EnvFilter;
@@ -43,9 +47,26 @@ pub async fn build_test_app(use_demo_users: bool) -> Result<()> {
 }
 
 async fn demo_users(state: &AppState) -> Result<()> {
-    db::user::create_new_user(state, "demo1", "demo1passwd").await?;
-    db::user::create_new_user(state, "demo2", "demo2passwd").await?;
-    db::user::create_new_user(state, "demo3", "demo3passwd").await?;
+    db::user::create_new_user(
+        state,
+        "demo1",
+        passwd_encrypt("demo1passwd", gen_salt())?.as_str(),
+    )
+    .await?;
+
+    db::user::create_new_user(
+        state,
+        "demo2",
+        passwd_encrypt("demo2passwd", gen_salt())?.as_str(),
+    )
+    .await?;
+
+    db::user::create_new_user(
+        state,
+        "demo3",
+        passwd_encrypt("demo3passwd", gen_salt())?.as_str(),
+    )
+    .await?;
 
     Ok(())
 }

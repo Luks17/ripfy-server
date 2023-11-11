@@ -1,12 +1,34 @@
 use super::junctions;
 use crate::AppState;
-use entity::song;
-use sea_orm::{ActiveModelTrait, ActiveValue, DbErr, EntityTrait};
+use entity::{song, user_song};
+use sea_orm::{
+    ActiveModelTrait, ActiveValue, ColumnTrait, DbErr, EntityTrait, JoinType, QueryFilter,
+    QuerySelect, RelationTrait,
+};
 
-pub async fn first_by_id(state: &AppState, id: &str) -> Result<Option<song::Model>, DbErr> {
+/// Finds a song entity that is related by user_song to an user entity and Returns it
+///
+/// Requires the AppState, SongId and the UserId of the User that made the request
+///
+/// Return sea_orm::DbErr if the SELECT operation fails
+pub async fn first_by_id(
+    state: &AppState,
+    song_id: &str,
+    user_id: &str,
+) -> Result<Option<song::Model>, DbErr> {
     let db = &state.db;
 
-    let song = song::Entity::find_by_id(id).one(db).await?;
+    // Equivalent to:
+    //
+    // SELECT song.*
+    // FROM song
+    // JOIN user_song ON song.id = user_song.song_id
+    // WHERE song.id = $input_song_id AND user_song.user_id = $input_user_id;
+    let song = song::Entity::find_by_id(song_id)
+        .join(JoinType::Join, song::Relation::UserSong.def())
+        .filter(user_song::Column::UserId.eq(user_id))
+        .one(db)
+        .await?;
 
     Ok(song)
 }

@@ -13,7 +13,7 @@ use std::time::Duration;
 fn encrypted_passwd() -> Result<()> {
     let passwd = "abcde123";
 
-    let encrypted_passwd = passwd_encrypt(passwd, gen_salt().as_str())?;
+    let encrypted_passwd = passwd_encrypt(passwd, gen_salt())?;
     let do_passwords_match = verify_encrypted_passwd(passwd, &encrypted_passwd)?;
     let do_passwords_not_match = !verify_encrypted_passwd("ABCDE123", &encrypted_passwd)?;
 

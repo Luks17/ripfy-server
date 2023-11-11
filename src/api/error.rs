@@ -81,6 +81,8 @@ impl Error {
             Self::IncorrectPasswd | Self::UserNotFound => {
                 (StatusCode::UNAUTHORIZED, ClientError::LOGIN_FAIL)
             }
+            Self::SongNotFound => (StatusCode::NOT_FOUND, ClientError::RESOURCE_NOT_FOUND),
+            Self::InvalidPayload(..) => (StatusCode::BAD_REQUEST, ClientError::INVALID_BODY),
             Self::NoAuthToken | Self::TokenError(..) | Self::CtxNotInRequestExtensions => {
                 (StatusCode::UNAUTHORIZED, ClientError::NO_AUTH)
             }
@@ -98,7 +100,8 @@ impl Error {
 pub enum ClientError {
     LOGIN_FAIL,
     NO_AUTH,
-    INVALID_PARAMS,
+    INVALID_BODY,
     SERVICE_ERROR,
+    RESOURCE_NOT_FOUND,
     USERNAME_ALREADY_USED,
 }

@@ -10,9 +10,9 @@ use tower_cookies::Cookies;
 
 pub fn router(state: AppState) -> Router {
     Router::new()
-        .route("/api/login", post(login_handler))
-        .route("/api/signup", post(signup_handler))
-        .route("/api/logout", post(logout_handler))
+        .route("/login", post(login_handler))
+        .route("/signup", post(signup_handler))
+        .route("/logout", post(logout_handler))
         .with_state(state)
 }
 
@@ -66,9 +66,9 @@ async fn signup_handler(
         return Err(Error::UserAlreadyExists);
     }
 
-    let hashed_pwd = passwd_encrypt(pwd, gen_salt().as_str())?;
+    let hashed_pwd = passwd_encrypt(pwd, gen_salt())?;
 
-    db::user::create_new_user(&state, username, hashed_pwd)
+    db::user::create_new_user(&state, &username, &hashed_pwd)
         .await
         .map_err(|_| Error::DbInsertFailed)?;
 
@@ -80,19 +80,14 @@ async fn signup_handler(
     )))
 }
 
-async fn logout_handler(
-    cookies: Cookies,
-    Json(payload): Json<LogoutPayload>,
-) -> Result<Json<Value>> {
+async fn logout_handler(cookies: Cookies) -> Result<Json<Value>> {
     tracing::debug!("LOGOUT HANDLER");
 
-    if payload.logoff {
-        remove_token_cookie(&cookies).await;
-    }
+    remove_token_cookie(&cookies).await;
 
     Ok(Json(json!({
             "result": {
-                "logged_off": payload.logoff
+                "logged_off": true
             }
         }
     )))
@@ -102,9 +97,4 @@ async fn logout_handler(
 struct AuthPayload {
     username: String,
     pwd: String,
-}
-
-#[derive(Debug, Deserialize)]
-struct LogoutPayload {
-    logoff: bool,
 }

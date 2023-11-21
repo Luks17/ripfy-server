@@ -3,8 +3,8 @@ use argon2::{
     Argon2, PasswordHash, PasswordHasher, PasswordVerifier,
 };
 
-pub fn passwd_encrypt(passwd: impl Into<String>, salt: &str) -> Result<String, Error> {
-    let salt_string = SaltString::from_b64(salt)?;
+pub fn passwd_encrypt(passwd: impl Into<String>, salt: String) -> Result<String, Error> {
+    let salt_string = SaltString::from_b64(&salt)?;
 
     let passwd_hash = Argon2::default().hash_password(passwd.into().as_bytes(), &salt_string)?;
 

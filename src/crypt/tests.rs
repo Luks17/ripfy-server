@@ -1,23 +1,19 @@
-use std::time::Duration;
-
-use anyhow::Result;
-use ripfy_server::{
-    crypt::{
-        b64, decode_signature,
-        passwd::{gen_salt, passwd_encrypt, verify_encrypted_passwd},
-        sign_content,
-        token::Token,
-    },
-    keys,
-    util::time::now_utc_plus_sec_str,
+use super::{
+    b64, decode_signature,
+    passwd::{gen_salt, passwd_encrypt, verify_encrypted_passwd},
+    sign_content,
+    token::Token,
 };
+use crate::{keys, util::time::now_utc_plus_sec_str};
+use anyhow::Result;
 use rsa::signature::Verifier;
+use std::time::Duration;
 
 #[test]
 fn encrypted_passwd() -> Result<()> {
     let passwd = "abcde123";
 
-    let encrypted_passwd = passwd_encrypt(passwd, gen_salt().as_str())?;
+    let encrypted_passwd = passwd_encrypt(passwd, gen_salt())?;
     let do_passwords_match = verify_encrypted_passwd(passwd, &encrypted_passwd)?;
     let do_passwords_not_match = !verify_encrypted_passwd("ABCDE123", &encrypted_passwd)?;
 

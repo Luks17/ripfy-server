@@ -16,9 +16,6 @@ while getopts ":sct" opt; do
     c)
       cargo watch -q -c -w tests/ -x "test -q client_mock -- --ignored --nocapture"
       ;;
-    t)
-      cargo watch -q -c -w tests/ -x test
-      ;;
     \?)
       printf "Invalid option: -$OPTARG. \nUse -c to watch the mock-client or -s to watch server instead!\n"
       exit 1

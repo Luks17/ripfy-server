@@ -2,3 +2,4 @@
 
 pub use super::song::Entity as Song;
 pub use super::user::Entity as User;
+pub use super::user_song::Entity as UserSong;

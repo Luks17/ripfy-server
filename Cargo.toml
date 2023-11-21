@@ -1,5 +1,6 @@
 [package]
 name = "ripfy-server"
+default-run = "ripfy-server"
 version = "0.1.0"
 edition = "2021"
 
@@ -38,6 +39,7 @@ tower-http = { version = "0.4.4" }
 uuid = { version = "1.4.1", features = ["v4", "fast-rng"] }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
+migration = { workspace = true }
 base64 = "0.21.4"
 time = "0.3.29"
 rand = "0.8.5"

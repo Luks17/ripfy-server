@@ -1,12 +1,12 @@
 use anyhow::Result;
 use axum::http::StatusCode;
-use dev_utils::build_test_app;
+use dev_utils::spawn_test_app;
 use ripfy_server::config;
 use serde_json::json;
 
 #[tokio::test]
 async fn auth_permissions_integration_test() -> Result<()> {
-    build_test_app(false).await?;
+    spawn_test_app(false).await?;
 
     let client = httpc_test::new_client(format!("http://localhost:{}", config().port))?;
 

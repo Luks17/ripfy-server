@@ -1,12 +1,12 @@
 use anyhow::Result;
 use axum::http::StatusCode;
-use dev_utils::build_test_app;
+use dev_utils::spawn_test_app;
 use ripfy_server::config;
 use serde_json::json;
 
 #[tokio::test]
 async fn song_existance_integration_test() -> Result<()> {
-    build_test_app(true).await?;
+    spawn_test_app(true).await?;
 
     let client = httpc_test::new_client(format!("http://localhost:{}", config().port))?;
 

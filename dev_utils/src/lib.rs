@@ -10,7 +10,7 @@ use std::net::SocketAddr;
 use tracing_subscriber::EnvFilter;
 
 /// Used for integration tests
-pub async fn build_test_app(use_demo_users: bool) -> Result<()> {
+pub async fn spawn_test_app(use_demo_users: bool) -> Result<()> {
     tracing_subscriber::fmt()
         .pretty()
         .with_env_filter(EnvFilter::from_default_env())

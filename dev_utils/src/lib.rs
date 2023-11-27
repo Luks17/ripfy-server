@@ -1,3 +1,6 @@
+pub mod util;
+
+use crate::util::start_global_subscriber;
 use anyhow::Result;
 use migration::{Migrator, MigratorTrait};
 use ripfy_server::{
@@ -7,14 +10,10 @@ use ripfy_server::{
 };
 use sea_orm::Database;
 use std::net::SocketAddr;
-use tracing_subscriber::EnvFilter;
 
 /// Used for integration tests
-pub async fn spawn_test_app(use_demo_users: bool) -> Result<()> {
-    tracing_subscriber::fmt()
-        .pretty()
-        .with_env_filter(EnvFilter::from_default_env())
-        .init();
+pub async fn spawn_test_app(port: u16, use_demo_users: bool) -> Result<()> {
+    start_global_subscriber();
 
     tracing::info!("BUILDING TEST APP");
 
@@ -31,7 +30,7 @@ pub async fn spawn_test_app(use_demo_users: bool) -> Result<()> {
     config();
     keys();
 
-    let socket_addr = SocketAddr::from(([0, 0, 0, 0], config().port));
+    let socket_addr = SocketAddr::from(([0, 0, 0, 0], port));
 
     tokio::spawn(async move {
         axum::Server::bind(&socket_addr)

@@ -1,14 +1,14 @@
 use anyhow::Result;
 use axum::http::StatusCode;
-use dev_utils::spawn_test_app;
-use ripfy_server::config;
+use dev_utils::{spawn_test_app, util::get_port};
 use serde_json::json;
 
 #[tokio::test]
 async fn auth_permissions_integration_test() -> Result<()> {
-    spawn_test_app(false).await?;
+    let port = get_port();
+    spawn_test_app(port, false).await?;
 
-    let client = httpc_test::new_client(format!("http://localhost:{}", config().port))?;
+    let client = httpc_test::new_client(format!("http://localhost:{}", port))?;
 
     let add_song = client.do_post(
         "/api/songs",

@@ -42,10 +42,10 @@ async fn song_exclusivity_integration_test() -> Result<()> {
         .await?;
 
     let get_song_status = client_one.do_get("/api/song/fJ9rUzIMcZQ").await?.status();
-    assert_eq!(get_song_status, StatusCode::OK);
+    assert_eq!(get_song_status, StatusCode::OK.as_u16());
 
     let get_song_status = client_two.do_get("/api/song/fJ9rUzIMcZQ").await?.status();
-    assert_eq!(get_song_status, StatusCode::NOT_FOUND);
+    assert_eq!(get_song_status, StatusCode::NOT_FOUND.as_u16());
 
     Ok(())
 }
@@ -68,7 +68,7 @@ async fn song_existance_integration_test() -> Result<()> {
         .await?;
 
     let get_song_status = client.do_get("/api/song/fJ9rUzIMcZQ").await?.status();
-    assert_eq!(get_song_status, StatusCode::NOT_FOUND);
+    assert_eq!(get_song_status, StatusCode::NOT_FOUND.as_u16());
 
     client
         .do_post(
@@ -81,12 +81,12 @@ async fn song_existance_integration_test() -> Result<()> {
         .await?;
 
     let get_song_status = client.do_get("/api/song/fJ9rUzIMcZQ").await?.status();
-    assert_eq!(get_song_status, StatusCode::OK);
+    assert_eq!(get_song_status, StatusCode::OK.as_u16());
 
     client.do_delete("/api/song/fJ9rUzIMcZQ").await?;
 
     let get_song_status = client.do_get("/api/song/fJ9rUzIMcZQ").await?.status();
-    assert_eq!(get_song_status, StatusCode::NOT_FOUND);
+    assert_eq!(get_song_status, StatusCode::NOT_FOUND.as_u16());
 
     Ok(())
 }

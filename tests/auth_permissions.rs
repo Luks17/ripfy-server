@@ -17,7 +17,7 @@ async fn auth_permissions_integration_test() -> Result<()> {
         }),
     );
 
-    assert_eq!(add_song.await?.status(), StatusCode::UNAUTHORIZED);
+    assert_eq!(add_song.await?.status(), StatusCode::UNAUTHORIZED.as_u16());
 
     client
         .do_post(
@@ -37,7 +37,7 @@ async fn auth_permissions_integration_test() -> Result<()> {
         }),
     );
 
-    assert_eq!(login.await?.status(), StatusCode::OK);
+    assert_eq!(login.await?.status(), StatusCode::OK.as_u16());
 
     let add_song = client.do_post(
         "/api/songs",
@@ -46,7 +46,7 @@ async fn auth_permissions_integration_test() -> Result<()> {
         }),
     );
 
-    assert_eq!(add_song.await?.status(), StatusCode::OK);
+    assert_eq!(add_song.await?.status(), StatusCode::OK.as_u16());
 
     client
         .do_post(
@@ -64,7 +64,7 @@ async fn auth_permissions_integration_test() -> Result<()> {
         }),
     );
 
-    assert_eq!(add_song.await?.status(), StatusCode::UNAUTHORIZED);
+    assert_eq!(add_song.await?.status(), StatusCode::UNAUTHORIZED.as_u16());
 
     Ok(())
 }

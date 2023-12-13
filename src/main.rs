@@ -1,6 +1,7 @@
 use anyhow::Result;
 use ripfy_server::{build_app, config, db, keys, AppState};
 use std::net::SocketAddr;
+use tokio::net::TcpListener;
 use tracing_subscriber::EnvFilter;
 
 #[tokio::main]
@@ -21,11 +22,11 @@ async fn main() -> Result<()> {
     let app = build_app(state);
 
     let socket_address = SocketAddr::from(([0, 0, 0, 0], config().port));
+    let listener = TcpListener::bind(&socket_address).await?;
+
     tracing::info!("Listening on {}", socket_address);
 
-    axum::Server::bind(&socket_address)
-        .serve(app.into_make_service())
-        .await?;
+    axum::serve(listener, app.into_make_service()).await?;
 
     Ok(())
 }

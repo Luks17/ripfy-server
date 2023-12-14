@@ -39,6 +39,8 @@ pub enum Error {
     InvalidRestParameter,
     #[error("The request payload is invalid!\nReason: {0}")]
     InvalidPayload(String),
+    #[error("Requested file not found")]
+    FileNotFound,
 
     // Login
     #[error("Password does not match")]
@@ -53,6 +55,8 @@ pub enum Error {
     PasswdCryptError(#[from] argon2::password_hash::Error),
     #[error("Something went wrong running the yt-dlp process!\nReason: {0}")]
     YtDlpError(String),
+    #[error("Something went wrong when attempting IO operations!")]
+    IOError,
 }
 
 impl IntoResponse for Error {

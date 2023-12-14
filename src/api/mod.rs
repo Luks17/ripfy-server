@@ -2,6 +2,7 @@ pub mod auth;
 mod error;
 pub mod mw;
 pub mod song;
+pub mod stream;
 
 use crate::crypt::token::Token;
 use error::Result;

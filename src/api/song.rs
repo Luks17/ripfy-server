@@ -89,6 +89,11 @@ async fn add_song_handler(
         .await
         .map_err(|_| Error::DbInsertFailed)?;
 
+    process
+        .run_download(&song_id)
+        .await
+        .map_err(|e| Error::YtDlpError(e.to_string()))?;
+
     Ok(Json(json!(ModelResponse {
         data: Song { ..new_song }
     })))

@@ -53,7 +53,6 @@ pub async fn create_new(
         id: ActiveValue::Set(link_id.to_string()),
         title: ActiveValue::Set(title.to_string()),
         channel: ActiveValue::Set(channel.to_string()),
-        ..Default::default()
     };
 
     let new_song = new_song.insert(db).await?;

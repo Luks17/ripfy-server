@@ -11,6 +11,7 @@ use crate::crypt;
 pub type Result<T> = core::result::Result<T, Error>;
 
 #[derive(Error, Clone, Debug)]
+#[allow(clippy::enum_variant_names)]
 pub enum Error {
     // AUTH
     #[error("No authentication token was provided in the request header!")]
@@ -85,7 +86,9 @@ impl Error {
             Self::IncorrectPasswd | Self::UserNotFound => {
                 (StatusCode::UNAUTHORIZED, ClientError::LOGIN_FAIL)
             }
-            Self::SongNotFound => (StatusCode::NOT_FOUND, ClientError::RESOURCE_NOT_FOUND),
+            Self::SongNotFound | Self::FileNotFound => {
+                (StatusCode::NOT_FOUND, ClientError::RESOURCE_NOT_FOUND)
+            }
             Self::InvalidPayload(..) => (StatusCode::BAD_REQUEST, ClientError::INVALID_BODY),
             Self::NoAuthToken | Self::TokenError(..) | Self::CtxNotInRequestExtensions => {
                 (StatusCode::UNAUTHORIZED, ClientError::NO_AUTH)

@@ -33,8 +33,8 @@ async fn stream_handler(
         .map_err(|_| Error::IOError)?;
 
     if serve_file.status() != StatusCode::NOT_FOUND {
-        return Ok(serve_file.into_response());
+        Ok(serve_file.into_response())
     } else {
-        return Err(Error::FileNotFound);
+        Err(Error::FileNotFound)
     }
 }

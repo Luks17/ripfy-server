@@ -19,11 +19,9 @@ pub async fn connect() -> Result<DatabaseConnection> {
         .max_lifetime(Duration::from_secs(8))
         .sqlx_logging(false);
 
-    let db = Database::connect(opt)
+    Database::connect(opt)
         .await
-        .with_context(|| "Could not connect to database!");
-
-    db
+        .with_context(|| "Could not connect to database!")
 }
 
 /// Creates database file if does not exist

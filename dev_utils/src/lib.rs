@@ -10,6 +10,7 @@ use ripfy_server::{
 };
 use sea_orm::Database;
 use std::net::SocketAddr;
+use tokio::net::TcpListener;
 
 /// Used for integration tests
 pub async fn spawn_test_app(port: u16, use_demo_users: bool) -> Result<()> {
@@ -31,11 +32,10 @@ pub async fn spawn_test_app(port: u16, use_demo_users: bool) -> Result<()> {
     keys();
 
     let socket_addr = SocketAddr::from(([0, 0, 0, 0], port));
+    let listener = TcpListener::bind(&socket_addr).await?;
 
     tokio::spawn(async move {
-        axum::Server::bind(&socket_addr)
-            .serve(build_app(state).into_make_service())
-            .await?;
+        axum::serve(listener, build_app(state).into_make_service()).await?;
 
         Ok::<(), anyhow::Error>(())
     });

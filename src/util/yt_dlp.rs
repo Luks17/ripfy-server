@@ -52,7 +52,7 @@ impl Default for YtDlp {
         Self {
             install_path: Path::new(&config().yt_dlp_binary_path).to_path_buf(),
             output_path: Path::new(&config().yt_dlp_output_path).to_path_buf(),
-            timeout: Duration::from_millis(config().yt_dlp_timeout_milisecs.clone()),
+            timeout: Duration::from_millis(config().yt_dlp_timeout_milisecs),
         }
     }
 }

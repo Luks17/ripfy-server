@@ -5,6 +5,7 @@ use super::{
 use crate::{context::Ctx, crypt::token::Token, keys};
 use async_trait::async_trait;
 use axum::{
+    body::Body,
     extract::FromRequestParts,
     http::{request::Parts, Request},
     middleware::Next,
@@ -15,10 +16,10 @@ use tower_cookies::Cookies;
 // This middleware is useful to restrict access to routes only to authenticated users
 // When an extractor is wrapped in Result, axum will not immediately reject the request if it does
 // not match
-pub async fn ctx_require_auth<B>(
+pub async fn ctx_require_auth(
     ctx: Result<Ctx>,
-    request: Request<B>,
-    next: Next<B>,
+    request: Request<Body>,
+    next: Next,
 ) -> Result<Response> {
     tracing::debug!("MIDDLEWARE - REQUIRE_AUTHENTICATION_CTX");
 
@@ -29,10 +30,10 @@ pub async fn ctx_require_auth<B>(
 
 /// Middleware for extracting token cookie from request header and returning a context
 /// Also refreshes token if valid or removes it if invalid
-pub async fn ctx_resolver<B>(
+pub async fn ctx_resolver(
     cookies: Cookies,
-    mut req: Request<B>,
-    next: Next<B>,
+    mut req: Request<Body>,
+    next: Next,
 ) -> Result<Response> {
     tracing::debug!("MIDDLEWARE - CTX_RESOLVER");
 

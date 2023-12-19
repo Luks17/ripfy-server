@@ -10,6 +10,7 @@ pub async fn create_new(state: &AppState, user_id: &str, song_id: &str) -> Resul
     let new_user_song = user_song::ActiveModel {
         user_id: ActiveValue::Set(user_id.to_string()),
         song_id: ActiveValue::Set(song_id.to_string()),
+        ..Default::default()
     };
 
     new_user_song.insert(db).await?;

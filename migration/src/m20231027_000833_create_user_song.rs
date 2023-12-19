@@ -15,6 +15,12 @@ impl MigrationTrait for Migration {
                     .if_not_exists()
                     .col(ColumnDef::new(UserSong::UserId).uuid().not_null())
                     .col(ColumnDef::new(UserSong::SongId).string().not_null())
+                    .col(
+                        ColumnDef::new(UserSong::AddedAt)
+                            .date_time()
+                            .not_null()
+                            .extra("DEFAULT CURRENT_TIMESTAMP"),
+                    )
                     .primary_key(Index::create().col(UserSong::UserId).col(UserSong::SongId))
                     .foreign_key(
                         ForeignKey::create()
@@ -47,4 +53,5 @@ pub enum UserSong {
     Table,
     UserId,
     SongId,
+    AddedAt,
 }

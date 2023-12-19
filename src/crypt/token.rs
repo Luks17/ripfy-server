@@ -82,7 +82,7 @@ impl Token {
 
     fn new(identifier: &str, duration_secs: &u64, key: &SigningKey<Sha512>) -> Result<Self, Error> {
         let identifier = identifier.to_string();
-        let expiration = now_utc_plus_sec_str(duration_secs.clone())?;
+        let expiration = now_utc_plus_sec_str(*duration_secs)?;
 
         let content = format!("{}.{}", b64::encode(&identifier), b64::encode(&expiration));
 

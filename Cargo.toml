@@ -8,44 +8,45 @@ edition = "2021"
 members = [".", "entity", "migration", "dev_utils"]
 
 [workspace.dependencies]
-sea-orm = { version = "0.12.2", features = [
+sea-orm = { version = "0.12.9", features = [
   "sqlx-sqlite",
   "runtime-tokio-rustls",
   "macros",
 ] }
-serde = { version = "1.0.188", features = ["derive"] }
-tokio = { version = "1.32.0", features = ["full"] }
+serde = { version = "1.0.193", features = ["derive"] }
+tokio = { version = "1.35.0", features = ["full"] }
 anyhow = "1.0.75"
 migration = { path = "migration" }
-tracing = "0.1.37"
-tracing-subscriber = { version = "0.3.17", features = ["env-filter"] }
-axum = "0.6.20"
+tracing = "0.1.40"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
+axum = "0.7.2"
 
 [dependencies]
 axum = { workspace = true }
 entity = { path = "entity" }
 anyhow = { workspace = true }
 argon2 = { version = "0.5.2", features = ["std"] }
-async-trait = "0.1.73"
-figment = { version = "0.10.10", features = ["toml"] }
+async-trait = "0.1.74"
+figment = { version = "0.10.12", features = ["toml"] }
 sea-orm = { workspace = true }
 serde = { workspace = true }
-serde_json = "1.0.107"
-strum_macros = "0.25.2"
+serde_json = "1.0.108"
+strum_macros = "0.25.3"
 tokio = { workspace = true }
-thiserror = "1.0.48"
-tower-cookies = "0.9.0"
-tower-http = { version = "0.4.4" }
-uuid = { version = "1.4.1", features = ["v4", "fast-rng"] }
+thiserror = "1.0.50"
+tower-cookies = "0.10.0"
+tower-http = { version = "0.5.0", features = ["fs"] }
+uuid = { version = "1.6.1", features = ["v4", "fast-rng"] }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 migration = { workspace = true }
-base64 = "0.21.4"
-time = "0.3.29"
+base64 = "0.21.5"
+time = "0.3.30"
 rand = "0.8.5"
-rsa = { version = "0.9.2", features = ["sha2"] }
-lazy-regex = "3.0.2"
+rsa = { version = "0.9.6", features = ["sha2"] }
+lazy-regex = "3.1.0"
+tower = "0.4.13"
 
 [dev-dependencies]
 dev_utils = { path = "dev_utils" }
-httpc-test = "0.1.5"
+httpc-test = "0.1.8"

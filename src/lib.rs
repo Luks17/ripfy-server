@@ -26,6 +26,7 @@ pub fn build_app(state: AppState) -> Router {
     Router::new()
         .nest("/api", api::auth::router(state.clone()))
         .nest("/api", routes_rest)
+        .merge(api::stream::router(state.clone()))
         .layer(middleware::from_fn(api::mw::ctx::ctx_resolver))
         .layer(CookieManagerLayer::new())
 }

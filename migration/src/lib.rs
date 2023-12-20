@@ -3,6 +3,7 @@ pub use sea_orm_migration::prelude::*;
 mod m20230920_191630_create_song_table;
 mod m20231008_182809_create_user;
 mod m20231027_000833_create_user_song;
+mod m20231219_224941_create_playlist_tables;
 
 pub struct Migrator;
 
@@ -13,6 +14,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20230920_191630_create_song_table::Migration),
             Box::new(m20231008_182809_create_user::Migration),
             Box::new(m20231027_000833_create_user_song::Migration),
+            Box::new(m20231219_224941_create_playlist_tables::Migration),
         ]
     }
 }

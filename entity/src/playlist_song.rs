@@ -19,7 +19,7 @@ pub enum Relation {
         from = "Column::PlaylistId",
         to = "super::playlist::Column::Id",
         on_update = "NoAction",
-        on_delete = "NoAction"
+        on_delete = "Cascade"
     )]
     Playlist,
     #[sea_orm(

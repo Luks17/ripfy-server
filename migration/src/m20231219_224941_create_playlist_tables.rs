@@ -55,7 +55,8 @@ impl MigrationTrait for Migration {
                             .from_tbl(PlaylistSong::Table)
                             .from_col(PlaylistSong::PlaylistId)
                             .to_tbl(Playlist::Table)
-                            .to_col(Playlist::Id),
+                            .to_col(Playlist::Id)
+                            .on_delete(ForeignKeyAction::Cascade),
                     )
                     .foreign_key(
                         ForeignKey::create()

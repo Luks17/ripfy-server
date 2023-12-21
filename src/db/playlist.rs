@@ -18,7 +18,11 @@ pub async fn first_by_id(
     Ok(playlist)
 }
 
-pub async fn create_new(state: &AppState, user_id: &str, title: &str) -> Result<(), DbErr> {
+pub async fn create_new(
+    state: &AppState,
+    user_id: &str,
+    title: &str,
+) -> Result<playlist::Model, DbErr> {
     let db = &state.db;
 
     let new_playlist = playlist::ActiveModel {
@@ -27,15 +31,18 @@ pub async fn create_new(state: &AppState, user_id: &str, title: &str) -> Result<
         title: ActiveValue::Set(title.into()),
     };
 
-    new_playlist.insert(db).await?;
+    let new_playlist = new_playlist.insert(db).await?;
 
-    Ok(())
+    Ok(new_playlist)
 }
 
-pub async fn delete(state: &AppState, playlist_id: &str) -> Result<(), DbErr> {
+pub async fn delete(state: &AppState, playlist_id: &str, user_id: &str) -> Result<(), DbErr> {
     let db = &state.db;
 
-    playlist::Entity::delete_by_id(playlist_id).exec(db).await?;
+    playlist::Entity::delete_by_id(playlist_id)
+        .filter(playlist::Column::UserId.eq(user_id))
+        .exec(db)
+        .await?;
 
     Ok(())
 }

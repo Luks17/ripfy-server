@@ -1,6 +1,6 @@
 use super::junctions;
 use crate::AppState;
-use entity::{song, user_song};
+use entity::{playlist_song, song, user_song};
 use sea_orm::{
     ActiveModelTrait, ActiveValue, ColumnTrait, DbErr, EntityTrait, JoinType, QueryFilter,
     QuerySelect, RelationTrait,
@@ -25,12 +25,24 @@ pub async fn first_by_id(
     // JOIN user_song ON song.id = user_song.song_id
     // WHERE song.id = $input_song_id AND user_song.user_id = $input_user_id;
     let song = song::Entity::find_by_id(song_id)
-        .join(JoinType::Join, song::Relation::UserSong.def())
+        .join(JoinType::LeftJoin, song::Relation::UserSong.def())
         .filter(user_song::Column::UserId.eq(user_id))
         .one(db)
         .await?;
 
     Ok(song)
+}
+
+pub async fn from_playlist(state: &AppState, playlist_id: &str) -> Result<Vec<song::Model>, DbErr> {
+    let db = &state.db;
+
+    let songs = song::Entity::find()
+        .join(JoinType::LeftJoin, song::Relation::PlaylistSong.def())
+        .filter(playlist_song::Column::PlaylistId.eq(playlist_id))
+        .all(db)
+        .await?;
+
+    Ok(songs)
 }
 
 /// Creates a new song entity on the database and Returns it

@@ -18,9 +18,12 @@ pub struct AppState {
     pub db: DatabaseConnection,
 }
 
+// The difference between layers and route_layers used here is that route_layers apply only when
+// the user matches with a route that exists
 pub fn build_app(state: AppState) -> Router {
     let routes_rest = Router::new()
         .merge(api::song::router(state.clone()))
+        .merge(api::playlist::router(state.clone()))
         .route_layer(middleware::from_fn(api::mw::ctx::ctx_require_auth));
 
     Router::new()

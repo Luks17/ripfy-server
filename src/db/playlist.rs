@@ -18,6 +18,20 @@ pub async fn first_by_id(
     Ok(playlist)
 }
 
+pub async fn all_by_user_id(
+    state: &AppState,
+    user_id: &str,
+) -> Result<Vec<playlist::Model>, DbErr> {
+    let db = &state.db;
+
+    let playlists = playlist::Entity::find()
+        .filter(playlist::Column::UserId.eq(user_id))
+        .all(db)
+        .await?;
+
+    Ok(playlists)
+}
+
 pub async fn create_new(
     state: &AppState,
     user_id: &str,

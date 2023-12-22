@@ -11,7 +11,7 @@ use serde_json::{json, Value};
 
 pub fn router(state: AppState) -> Router {
     Router::new()
-        .route("/playlists/:id", get(get_playlist_handler))
+        .route("/playlists", get(get_playlists_handler))
         .route("/playlists/:id/songs", get(get_playlist_songs_handler))
         .route("/playlists", post(create_playlist_handler))
         .route("/playlists/:id/songs", post(add_playlist_song_handler))
@@ -23,24 +23,18 @@ pub fn router(state: AppState) -> Router {
         .with_state(state)
 }
 
-/// Returns a playlist created by the user if exists
+/// Returns playlists created by user if any exists
 ///
 /// WILL NOT return a playlist owned by another user
-async fn get_playlist_handler(
-    State(state): State<AppState>,
-    ctx: Ctx,
-    Path(id): Path<String>,
-) -> Result<Json<Value>> {
+async fn get_playlists_handler(State(state): State<AppState>, ctx: Ctx) -> Result<Json<Value>> {
     tracing::debug!("GET PLAYLIST HANDLER");
 
-    let playlist = match db::playlist::first_by_id(&state, &id, &ctx.user_id()).await {
-        Ok(playlist) => playlist.ok_or(Error::PlaylistNotFound)?,
-        Err(_) => return Err(Error::DbSelectFailed),
-    };
+    let playlists = db::playlist::all_by_user_id(&state, &ctx.user_id())
+        .await
+        .map_err(|_| Error::DbSelectFailed)?;
 
-    Ok(Json(json!(ModelResponse {
-        data: Playlist { ..playlist }
-    })))
+    // TODO: does not have type assertion, implement later
+    Ok(Json(json!(ModelResponse { data: playlists })))
 }
 
 async fn get_playlist_songs_handler(

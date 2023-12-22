@@ -1,4 +1,5 @@
 use anyhow::Result;
+use ripfy_server::api::ModelResponse;
 use serde_json::json;
 
 #[tokio::test]
@@ -35,6 +36,16 @@ async fn client_mock() -> Result<()> {
             ),
         )
         .await?;
+
+    let playlist: ModelResponse<entity::playlist::Model> = client
+        .do_post(
+            "/api/playlists",
+            json!({
+            "title": "test"
+            }),
+        )
+        .await?
+        .json_body_as()?;
 
     Ok(())
 }

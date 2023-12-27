@@ -27,7 +27,7 @@ pub fn router(state: AppState) -> Router {
 ///
 /// WILL NOT return a playlist owned by another user
 async fn get_playlists_handler(State(state): State<AppState>, ctx: Ctx) -> Result<Json<Value>> {
-    tracing::debug!("GET PLAYLIST HANDLER");
+    tracing::debug!("GET PLAYLISTS HANDLER");
 
     let playlists = db::playlist::all_by_user_id(&state, &ctx.user_id())
         .await
@@ -110,7 +110,13 @@ async fn delete_playlist_handler(
 ) -> Result<Json<Value>> {
     tracing::debug!("DELETE PLAYLIST HANDLER");
 
-    db::playlist::delete(&state, &id, &ctx.user_id())
+    // makes sure the playlist exists and is owned by user
+    db::playlist::first_by_id(&state, &id, &ctx.user_id())
+        .await
+        .map_err(|_| Error::DbSelectFailed)?
+        .ok_or(Error::PlaylistNotFound)?;
+
+    db::playlist::delete(&state, &id)
         .await
         .map_err(|_| Error::DbDeleteFailed)?;
 

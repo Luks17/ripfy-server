@@ -50,13 +50,10 @@ pub async fn create_new(
     Ok(new_playlist)
 }
 
-pub async fn delete(state: &AppState, playlist_id: &str, user_id: &str) -> Result<(), DbErr> {
+pub async fn delete(state: &AppState, playlist_id: &str) -> Result<(), DbErr> {
     let db = &state.db;
 
-    playlist::Entity::delete_by_id(playlist_id)
-        .filter(playlist::Column::UserId.eq(user_id))
-        .exec(db)
-        .await?;
+    playlist::Entity::delete_by_id(playlist_id).exec(db).await?;
 
     Ok(())
 }

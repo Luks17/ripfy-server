@@ -1,16 +1,17 @@
 pub mod auth;
 mod error;
 pub mod mw;
+pub mod playlist;
 pub mod song;
 pub mod stream;
 
 use crate::crypt::token::Token;
 use error::Result;
 use mw::AUTH_TOKEN;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use tower_cookies::{Cookie, Cookies};
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ModelResponse<T> {
     pub data: T,
 }

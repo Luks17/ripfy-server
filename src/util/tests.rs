@@ -33,7 +33,7 @@ async fn yt_dlp_process() -> Result<()> {
 
     let id = "fJ9rUzIMcZQ";
 
-    let output = process.run_no_download(id).await?;
+    let output = process.run(id).await?;
 
     let expected = YtDlpResult {
         channel: "Queen Official".into(),

@@ -4,20 +4,26 @@ use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
-#[sea_orm(table_name = "song")]
+#[sea_orm(table_name = "playlist")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: String,
+    pub user_id: String,
     pub title: String,
-    pub channel: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(has_many = "super::playlist_song::Entity")]
     PlaylistSong,
-    #[sea_orm(has_many = "super::user_song::Entity")]
-    UserSong,
+    #[sea_orm(
+        belongs_to = "super::user::Entity",
+        from = "Column::UserId",
+        to = "super::user::Column::Id",
+        on_update = "NoAction",
+        on_delete = "NoAction"
+    )]
+    User,
 }
 
 impl Related<super::playlist_song::Entity> for Entity {
@@ -26,27 +32,18 @@ impl Related<super::playlist_song::Entity> for Entity {
     }
 }
 
-impl Related<super::user_song::Entity> for Entity {
-    fn to() -> RelationDef {
-        Relation::UserSong.def()
-    }
-}
-
-impl Related<super::playlist::Entity> for Entity {
-    fn to() -> RelationDef {
-        super::playlist_song::Relation::Playlist.def()
-    }
-    fn via() -> Option<RelationDef> {
-        Some(super::playlist_song::Relation::Song.def().rev())
-    }
-}
-
 impl Related<super::user::Entity> for Entity {
     fn to() -> RelationDef {
-        super::user_song::Relation::User.def()
+        Relation::User.def()
+    }
+}
+
+impl Related<super::song::Entity> for Entity {
+    fn to() -> RelationDef {
+        super::playlist_song::Relation::Song.def()
     }
     fn via() -> Option<RelationDef> {
-        Some(super::user_song::Relation::Song.def().rev())
+        Some(super::playlist_song::Relation::Playlist.def().rev())
     }
 }
 

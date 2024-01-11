@@ -26,6 +26,8 @@ pub enum Error {
     UserNotFound,
     #[error("Entered song does not exist")]
     SongNotFound,
+    #[error("Entered playlist does not exist!")]
+    PlaylistNotFound,
     #[error("Failed to execute the insert query in the database!")]
     DbInsertFailed,
     #[error("Failed to execute the select query in the database!")]
@@ -86,7 +88,7 @@ impl Error {
             Self::IncorrectPasswd | Self::UserNotFound => {
                 (StatusCode::UNAUTHORIZED, ClientError::LOGIN_FAIL)
             }
-            Self::SongNotFound | Self::FileNotFound => {
+            Self::SongNotFound | Self::FileNotFound | Self::PlaylistNotFound => {
                 (StatusCode::NOT_FOUND, ClientError::RESOURCE_NOT_FOUND)
             }
             Self::InvalidPayload(..) => (StatusCode::BAD_REQUEST, ClientError::INVALID_BODY),

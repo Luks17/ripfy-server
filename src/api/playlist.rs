@@ -50,7 +50,7 @@ async fn get_playlist_songs_handler(
         .map_err(|_| Error::DbSelectFailed)?
         .ok_or(Error::PlaylistNotFound)?;
 
-    let songs = db::song::from_playlist(&state, &id)
+    let songs = db::song::all_from_playlist(&state, &id)
         .await
         .map_err(|_| Error::DbSelectFailed)?;
 

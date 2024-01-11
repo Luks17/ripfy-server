@@ -22,9 +22,9 @@ use serde_json::{json, Value};
 
 pub fn router(state: AppState) -> Router {
     Router::new()
-        .route("/song/:id", get(get_song_handler))
+        .route("/songs/:id", get(get_song_handler))
         .route("/songs", post(add_song_handler))
-        .route("/song/:id", delete(remove_song_handler))
+        .route("/songs/:id", delete(remove_song_handler))
         .with_state(state)
 }
 

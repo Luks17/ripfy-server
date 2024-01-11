@@ -228,3 +228,83 @@ async fn playlist_exclusivity_integration_test() -> Result<()> {
 
     Ok(())
 }
+
+#[tokio::test]
+async fn user_song_deletion_integration_test() -> Result<()> {
+    let port = get_port();
+    spawn_test_app(port, true).await?;
+
+    let client = httpc_test::new_client(format!("http://localhost:{}", port))?;
+    let acdc_song = "Nnjh-zp6pP4";
+
+    client
+        .do_post(
+            "/api/login",
+            json!({
+            "username": "demo1",
+            "pwd": "demo1passwd"
+            }),
+        )
+        .await?;
+
+    // adds song for user
+    client
+        .do_post(
+            "/api/songs",
+            json!({
+                "link": format!("https://youtu.be/{}", acdc_song)
+                }
+            ),
+        )
+        .await?;
+
+    let playlist: ModelResponse<entity::playlist::Model> = client
+        .do_post(
+            "/api/playlists",
+            json!({
+            "title": "Queen Classics"
+            }),
+        )
+        .await?
+        .json_body_as()?;
+
+    // adds song to playlist
+    client
+        .do_post(
+            format!("/api/playlists/{}/songs", playlist.data.id).as_str(),
+            json!({
+                "song_id": acdc_song
+                }
+            ),
+        )
+        .await?;
+
+    // asserts it was actually added to the playlist
+    assert!(client
+        .do_get(format!("/api/playlists/{}/songs", playlist.data.id).as_str())
+        .await?
+        .json_body_as::<ModelResponse<Vec<entity::song::Model>>>()?
+        .data
+        .iter()
+        .map(|song| song.id.as_str())
+        .collect::<Vec<&str>>()
+        .contains(&acdc_song));
+
+    // removes song from user
+    client
+        .do_delete(format!("/api/songs/{}", acdc_song).as_str())
+        .await?;
+
+    // asserts it is no longer in the playlist
+    assert!(!client
+        .do_get(format!("/api/playlists/{}/songs", playlist.data.id).as_str())
+        .await?
+        .json_body_as::<ModelResponse<Vec<entity::song::Model>>>()?
+        .data
+        .iter()
+        .map(|song| song.id.as_str())
+        .collect::<Vec<&str>>()
+        .contains(&acdc_song));
+
+    Ok(())
+}

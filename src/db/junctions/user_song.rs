@@ -35,8 +35,9 @@ pub async fn delete(state: &AppState, user_id: &str, song_id: &str) -> Result<()
                 .add(
                     playlist_song::Column::PlaylistId.in_subquery(
                         Query::select()
-                            .expr(playlist::Column::UserId.eq(user_id))
+                            .column(playlist::Column::Id)
                             .from(playlist::Entity)
+                            .and_where(playlist::Column::UserId.eq(user_id))
                             .to_owned(),
                     ),
                 )

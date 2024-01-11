@@ -33,7 +33,10 @@ pub async fn first_by_id(
     Ok(song)
 }
 
-pub async fn from_playlist(state: &AppState, playlist_id: &str) -> Result<Vec<song::Model>, DbErr> {
+pub async fn all_from_playlist(
+    state: &AppState,
+    playlist_id: &str,
+) -> Result<Vec<song::Model>, DbErr> {
     let db = &state.db;
 
     let songs = song::Entity::find()

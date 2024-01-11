@@ -81,18 +81,13 @@ async fn add_song_handler(
 
     let process = YtDlp::default();
     let YtDlpResult { channel, fulltitle } = process
-        .run_no_download(&song_id)
+        .run(&song_id)
         .await
         .map_err(|e| Error::YtDlpError(e.to_string()))?;
 
     let new_song = db::song::create_new(&state, &song_id, &fulltitle, &channel, &ctx.user_id())
         .await
         .map_err(|_| Error::DbInsertFailed)?;
-
-    process
-        .run_download(&song_id)
-        .await
-        .map_err(|e| Error::YtDlpError(e.to_string()))?;
 
     Ok(Json(json!(ModelResponse {
         data: Song { ..new_song }

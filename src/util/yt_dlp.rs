@@ -60,11 +60,14 @@ impl Default for YtDlp {
 impl YtDlp {
     /// Receives a yt video id as parameter
     /// Downloads video from url, extracts audio as flac and outputs it to the output_path
-    pub async fn run_download(&self, id: &str) -> Result<(), Error> {
+    /// Returns some info about the video as a YtDlpOutput
+    pub async fn run(&self, id: &str) -> Result<YtDlpResult, Error> {
         let url = get_url(id);
 
         // extract audio - convert to flac - output to output_path - name is the video id
         let args = vec![
+            "--print",
+            "before_dl:%(.{channel,fulltitle})#j",
             "-x",
             "--audio-format",
             "flac",
@@ -74,29 +77,6 @@ impl YtDlp {
             "%(id)s",
             &url,
         ];
-
-        let mut child = self.spawn_child(args).await?;
-        let exit_code = self.execute_until_exit(&mut child).await?;
-
-        // reads stderr
-        let stderr = read_std_buffer(child.stderr).await?;
-
-        // if the process did not exit with exit code 0, we return early
-        if !exit_code.success() {
-            let stderr = String::from_utf8(stderr).unwrap_or_default();
-            return Err(Error::YtDlpExitCode(exit_code.code().unwrap_or(1), stderr));
-        }
-
-        Ok(())
-    }
-
-    /// Receives a yt video id as parameter
-    /// Returns some info about the video as a YtDlpOutput
-    pub async fn run_no_download(&self, id: &str) -> Result<YtDlpResult, Error> {
-        let url = get_url(id);
-
-        // get stdout as Json
-        let args = vec!["--print", "%(.{channel,fulltitle})#j", &url];
 
         let mut child = self.spawn_child(args).await?;
         let exit_code = self.execute_until_exit(&mut child).await?;

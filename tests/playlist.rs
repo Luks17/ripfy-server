@@ -122,6 +122,29 @@ async fn playlist_songs_insertion_deletion_integration_test() -> Result<()> {
         .collect::<Vec<&str>>()
         .contains(&acdc_song));
 
+    // deletes playlist
+    client
+        .do_delete(format!("/api/playlists/{}", playlist.data.id).as_str())
+        .await?;
+
+    // asserts it was deleted
+    assert!(client
+        .do_get("/api/playlists")
+        .await?
+        .json_body_as::<ModelResponse<Vec<entity::song::Model>>>()?
+        .data
+        .is_empty());
+
+    // asserts that an error is returned when trying to get songs from it
+    assert_eq!(
+        client
+            .do_get(format!("/api/playlists/{}/songs", playlist.data.id).as_str())
+            .await?
+            .status()
+            .as_u16(),
+        StatusCode::NOT_FOUND
+    );
+
     Ok(())
 }
 
@@ -220,6 +243,16 @@ async fn playlist_exclusivity_integration_test() -> Result<()> {
     assert_eq!(
         client_two
             .do_delete(format!("/api/playlists/{}", playlist.data.id).as_str())
+            .await?
+            .status()
+            .as_u16(),
+        StatusCode::NOT_FOUND
+    );
+
+    // asserts client two cannot delete client one playlist_song
+    assert_eq!(
+        client_two
+            .do_delete(format!("/api/playlists/{}/songs/{}", playlist.data.id, queen_song).as_str())
             .await?
             .status()
             .as_u16(),

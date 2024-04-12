@@ -59,18 +59,18 @@ impl Default for YtDlp {
 
 impl YtDlp {
     /// Receives a yt video id as parameter
-    /// Downloads video from url, extracts audio as flac and outputs it to the output_path
+    /// Downloads video from url, extracts audio as opus and outputs it to the output_path
     /// Returns some info about the video as a YtDlpOutput
     pub async fn run(&self, id: &str) -> Result<YtDlpResult, Error> {
         let url = get_url(id);
 
-        // extract audio - convert to flac - output to output_path - name is the video id
+        // extract audio - convert to opus - output to output_path - name is the video id
         let args = vec![
             "--print",
             "before_dl:%(.{channel,fulltitle})#j",
             "-x",
             "--audio-format",
-            "flac",
+            "opus",
             "-P",
             self.output_path.to_str().ok_or(Error::InvalidYtDlpPath)?,
             "-o",

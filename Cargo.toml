@@ -20,6 +20,8 @@ migration = { path = "migration" }
 tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 axum = "0.7.5"
+utoipa = { version = "4.2.0", features = ["axum_extras"] }
+utoipa-swagger-ui = { version = "6.0.0", features = ["axum"] }
 
 [dependencies]
 axum = { workspace = true }
@@ -46,6 +48,8 @@ rand = "0.8.5"
 rsa = { version = "0.9.6", features = ["sha2"] }
 lazy-regex = "3.1.0"
 tower = "0.4.13"
+utoipa = { workspace = true }
+utoipa-swagger-ui = { workspace = true }
 
 [dev-dependencies]
 dev_utils = { path = "dev_utils" }

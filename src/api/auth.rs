@@ -7,6 +7,7 @@ use axum::{extract::State, routing::post, Json, Router};
 use serde::Deserialize;
 use serde_json::{json, Value};
 use tower_cookies::Cookies;
+use utoipa::ToSchema;
 
 pub fn router(state: AppState) -> Router {
     Router::new()
@@ -19,6 +20,14 @@ pub fn router(state: AppState) -> Router {
 /// Receives a payload of format: { username, passwd }
 /// Checks if user exists and it's password is correct
 /// If everything goes fine, generates an access token for said user and stores it on the cookies
+#[utoipa::path(
+    post,
+    path = "/api/login",
+    request_body = AuthPayload,
+    responses(
+        (status = 200, description = "Logged in successfully")
+    )
+)]
 async fn login_handler(
     State(state): State<AppState>,
     cookies: Cookies,
@@ -87,14 +96,14 @@ async fn logout_handler(cookies: Cookies) -> Result<Json<Value>> {
 
     Ok(Json(json!({
             "result": {
-                "logged_off": true
+                "success": true
             }
         }
     )))
 }
 
-#[derive(Debug, Deserialize)]
-struct AuthPayload {
+#[derive(Debug, Deserialize, ToSchema)]
+pub struct AuthPayload {
     username: String,
     pwd: String,
 }

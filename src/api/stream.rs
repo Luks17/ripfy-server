@@ -25,7 +25,7 @@ async fn stream_handler(
 ) -> Result<Response> {
     tracing::debug!("GET STREAM HANDLER");
 
-    let media_path = format!("./{}/{}.flac", &config().yt_dlp_output_path, song_id);
+    let media_path = format!("./{}/{}.opus", &config().yt_dlp_output_path, song_id);
 
     let serve_file = ServeFile::new(media_path)
         .oneshot(request)

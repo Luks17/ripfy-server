@@ -114,11 +114,11 @@ async fn remove_song_handler(
         .await
         .map_err(|_| Error::DbDeleteFailed)?;
 
-    Ok(Json(json!(
-        {
-        "result": "success"
-        }
-    )))
+    Ok(Json(json!(ResponseModel::<()> {
+        success: true,
+        data: None,
+        error: None
+    })))
 }
 
 #[derive(Debug, Deserialize)]

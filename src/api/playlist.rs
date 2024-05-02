@@ -105,11 +105,11 @@ async fn add_playlist_song_handler(
         .await
         .map_err(|_| Error::DbInsertFailed)?;
 
-    Ok(Json(json!(
-        {
-        "result": "success"
-        }
-    )))
+    Ok(Json(json!(ResponseModel::<()> {
+        success: true,
+        data: None,
+        error: None
+    })))
 }
 
 async fn delete_playlist_handler(
@@ -129,11 +129,11 @@ async fn delete_playlist_handler(
         .await
         .map_err(|_| Error::DbDeleteFailed)?;
 
-    Ok(Json(json!(
-        {
-        "result": "success"
-        }
-    )))
+    Ok(Json(json!(ResponseModel::<()> {
+        success: true,
+        data: None,
+        error: None
+    })))
 }
 
 async fn delete_playlist_song_handler(
@@ -153,11 +153,11 @@ async fn delete_playlist_song_handler(
         .await
         .map_err(|_| Error::DbDeleteFailed)?;
 
-    Ok(Json(json!(
-        {
-        "result": "success"
-        }
-    )))
+    Ok(Json(json!(ResponseModel::<()> {
+        success: true,
+        data: None,
+        error: None
+    })))
 }
 
 #[derive(Debug, Deserialize)]

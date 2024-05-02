@@ -6,7 +6,7 @@ use axum::{
 use serde_json::json;
 use thiserror::Error;
 
-use crate::crypt;
+use crate::{api::ResponseModel, crypt};
 
 pub type Result<T> = core::result::Result<T, Error>;
 
@@ -68,10 +68,10 @@ impl IntoResponse for Error {
 
         let (status_code, client_error) = self.parse_server_error_to_client();
 
-        let client_error_body = json!({
-            "error": {
-                "type": client_error.as_ref(),
-            }
+        let client_error_body = json!(ResponseModel::<()> {
+            success: false,
+            data: None,
+            error: Some(client_error.as_ref().to_string())
         });
 
         tracing::debug!("SENT CLIENT ERROR: {client_error_body}");

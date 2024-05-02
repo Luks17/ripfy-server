@@ -1,5 +1,6 @@
 use super::{error::Error, error::Result, gen_and_set_token_cookie, remove_token_cookie};
 use crate::{
+    api::ResponseModel,
     crypt::passwd::{gen_salt, passwd_encrypt, verify_encrypted_passwd},
     db, AppState,
 };
@@ -50,12 +51,11 @@ async fn login_handler(
 
     gen_and_set_token_cookie(&cookies, &user.id).await?;
 
-    Ok(Json(json!({
-            "result": {
-                "success": true
-            }
-        }
-    )))
+    Ok(Json(json!(ResponseModel::<()> {
+        success: true,
+        data: None,
+        error: None
+    })))
 }
 
 async fn signup_handler(
@@ -81,12 +81,11 @@ async fn signup_handler(
         .await
         .map_err(|_| Error::DbInsertFailed)?;
 
-    Ok(Json(json!({
-            "result": {
-                "success": true
-            }
-        }
-    )))
+    Ok(Json(json!(ResponseModel::<()> {
+        success: true,
+        data: None,
+        error: None
+    })))
 }
 
 async fn logout_handler(cookies: Cookies) -> Result<Json<Value>> {
@@ -94,12 +93,11 @@ async fn logout_handler(cookies: Cookies) -> Result<Json<Value>> {
 
     remove_token_cookie(&cookies).await;
 
-    Ok(Json(json!({
-            "result": {
-                "success": true
-            }
-        }
-    )))
+    Ok(Json(json!(ResponseModel::<()> {
+        success: true,
+        data: None,
+        error: None
+    })))
 }
 
 #[derive(Debug, Deserialize, ToSchema)]

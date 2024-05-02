@@ -1,5 +1,5 @@
 use super::error::{Error, Result};
-use crate::{api::ModelResponse, context::Ctx, db, AppState};
+use crate::{api::ResponseModel, context::Ctx, db, AppState};
 use axum::{
     extract::{Path, State},
     routing::{delete, get, post},
@@ -33,8 +33,11 @@ async fn get_playlists_handler(State(state): State<AppState>, ctx: Ctx) -> Resul
         .await
         .map_err(|_| Error::DbSelectFailed)?;
 
-    // TODO: does not have type assertion, implement later
-    Ok(Json(json!(ModelResponse { data: playlists })))
+    Ok(Json(json!(ResponseModel {
+        success: true,
+        data: Some(playlists),
+        error: None
+    })))
 }
 
 async fn get_playlist_songs_handler(
@@ -55,7 +58,11 @@ async fn get_playlist_songs_handler(
         .map_err(|_| Error::DbSelectFailed)?;
 
     // TODO: does not have type assertion, implement later
-    Ok(Json(json!(ModelResponse { data: songs })))
+    Ok(Json(json!(ResponseModel {
+        success: true,
+        data: Some(songs),
+        error: None
+    })))
 }
 
 async fn create_playlist_handler(
@@ -71,8 +78,10 @@ async fn create_playlist_handler(
         .await
         .map_err(|_| Error::DbInsertFailed)?;
 
-    Ok(Json(json!(ModelResponse {
-        data: Playlist { ..new_playlist }
+    Ok(Json(json!(ResponseModel {
+        success: true,
+        data: Some(Playlist { ..new_playlist }),
+        error: None
     })))
 }
 

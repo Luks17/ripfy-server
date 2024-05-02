@@ -1,7 +1,7 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use axum::http::StatusCode;
 use dev_utils::{spawn_test_app, util::get_port};
-use ripfy_server::api::ModelResponse;
+use ripfy_server::api::ResponseModel;
 use serde_json::json;
 
 #[tokio::test]
@@ -48,7 +48,7 @@ async fn playlist_songs_insertion_deletion_integration_test() -> Result<()> {
         .await?;
 
     // creates playlist
-    let playlist: ModelResponse<entity::playlist::Model> = client
+    let playlist: ResponseModel<entity::playlist::Model> = client
         .do_post(
             "/api/playlists",
             json!({
@@ -58,11 +58,15 @@ async fn playlist_songs_insertion_deletion_integration_test() -> Result<()> {
         .await?
         .json_body_as()?;
 
+    let playlist_data = playlist
+        .data
+        .ok_or_else(|| anyhow!("Could not unwrap playlist data"))?;
+
     // adds queen songs to playlist
     for song in queen_classics_songs.iter() {
         client
             .do_post(
-                format!("/api/playlists/{}/songs", playlist.data.id).as_str(),
+                format!("/api/playlists/{}/songs", playlist_data.id).as_str(),
                 json!({
                     "song_id": song
                     }
@@ -72,10 +76,11 @@ async fn playlist_songs_insertion_deletion_integration_test() -> Result<()> {
     }
 
     let songs: Vec<String> = client
-        .do_get(format!("/api/playlists/{}/songs", playlist.data.id).as_str())
+        .do_get(format!("/api/playlists/{}/songs", playlist_data.id).as_str())
         .await?
-        .json_body_as::<ModelResponse<Vec<entity::song::Model>>>()?
+        .json_body_as::<ResponseModel<Vec<entity::song::Model>>>()?
         .data
+        .ok_or_else(|| anyhow!("Could not unwrap playlist songs data"))?
         .iter()
         .map(|song| song.id.clone())
         .collect();
@@ -88,7 +93,7 @@ async fn playlist_songs_insertion_deletion_integration_test() -> Result<()> {
     // adds acdc song to playlist by 'mistake'
     client
         .do_post(
-            format!("/api/playlists/{}/songs", playlist.data.id).as_str(),
+            format!("/api/playlists/{}/songs", playlist_data.id).as_str(),
             json!({
                 "song_id": acdc_song
                 }
@@ -98,25 +103,27 @@ async fn playlist_songs_insertion_deletion_integration_test() -> Result<()> {
 
     // asserts it was actually added to the playlist
     assert!(client
-        .do_get(format!("/api/playlists/{}/songs", playlist.data.id).as_str())
+        .do_get(format!("/api/playlists/{}/songs", playlist_data.id).as_str())
         .await?
-        .json_body_as::<ModelResponse<Vec<entity::song::Model>>>()?
+        .json_body_as::<ResponseModel<Vec<entity::song::Model>>>()?
         .data
+        .ok_or_else(|| anyhow!("Could not unwrap playlist songs data"))?
         .iter()
         .map(|song| song.id.as_str())
         .collect::<Vec<&str>>()
         .contains(&acdc_song));
 
     client
-        .do_delete(format!("/api/playlists/{}/songs/{}", playlist.data.id, acdc_song).as_str())
+        .do_delete(format!("/api/playlists/{}/songs/{}", playlist_data.id, acdc_song).as_str())
         .await?;
 
     // asserts acdc song was deleted
     assert!(!client
-        .do_get(format!("/api/playlists/{}/songs", playlist.data.id).as_str())
+        .do_get(format!("/api/playlists/{}/songs", playlist_data.id).as_str())
         .await?
-        .json_body_as::<ModelResponse<Vec<entity::song::Model>>>()?
+        .json_body_as::<ResponseModel<Vec<entity::song::Model>>>()?
         .data
+        .ok_or_else(|| anyhow!("Could not unwrap playlist songs data"))?
         .iter()
         .map(|song| song.id.as_str())
         .collect::<Vec<&str>>()
@@ -124,21 +131,22 @@ async fn playlist_songs_insertion_deletion_integration_test() -> Result<()> {
 
     // deletes playlist
     client
-        .do_delete(format!("/api/playlists/{}", playlist.data.id).as_str())
+        .do_delete(format!("/api/playlists/{}", playlist_data.id).as_str())
         .await?;
 
     // asserts it was deleted
     assert!(client
         .do_get("/api/playlists")
         .await?
-        .json_body_as::<ModelResponse<Vec<entity::song::Model>>>()?
+        .json_body_as::<ResponseModel<Vec<entity::song::Model>>>()?
         .data
+        .ok_or_else(|| anyhow!("Could not unwrap playlists data"))?
         .is_empty());
 
     // asserts that an error is returned when trying to get songs from it
     assert_eq!(
         client
-            .do_get(format!("/api/playlists/{}/songs", playlist.data.id).as_str())
+            .do_get(format!("/api/playlists/{}/songs", playlist_data.id).as_str())
             .await?
             .status()
             .as_u16(),
@@ -189,7 +197,7 @@ async fn playlist_exclusivity_integration_test() -> Result<()> {
         .await?;
 
     // creates playlist
-    let playlist: ModelResponse<entity::playlist::Model> = client_one
+    let playlist: ResponseModel<entity::playlist::Model> = client_one
         .do_post(
             "/api/playlists",
             json!({
@@ -199,10 +207,14 @@ async fn playlist_exclusivity_integration_test() -> Result<()> {
         .await?
         .json_body_as()?;
 
+    let playlist_data = playlist
+        .data
+        .ok_or_else(|| anyhow!("Could not unwrap playlist data"))?;
+
     // adds queen song to playlist
     client_one
         .do_post(
-            format!("/api/playlists/{}/songs", playlist.data.id).as_str(),
+            format!("/api/playlists/{}/songs", playlist_data.id).as_str(),
             json!({
                 "song_id": queen_song
                 }
@@ -212,10 +224,11 @@ async fn playlist_exclusivity_integration_test() -> Result<()> {
 
     // asserts it was actually added to the playlist by client one
     assert!(client_one
-        .do_get(format!("/api/playlists/{}/songs", playlist.data.id).as_str())
+        .do_get(format!("/api/playlists/{}/songs", playlist_data.id).as_str())
         .await?
-        .json_body_as::<ModelResponse<Vec<entity::song::Model>>>()?
+        .json_body_as::<ResponseModel<Vec<entity::song::Model>>>()?
         .data
+        .ok_or_else(|| anyhow!("Could not unwrap playlists songs data"))?
         .iter()
         .map(|song| song.id.as_str())
         .collect::<Vec<&str>>()
@@ -225,14 +238,15 @@ async fn playlist_exclusivity_integration_test() -> Result<()> {
     assert!(client_two
         .do_get("/api/playlists")
         .await?
-        .json_body_as::<ModelResponse<Vec<entity::playlist::Model>>>()?
+        .json_body_as::<ResponseModel<Vec<entity::playlist::Model>>>()?
         .data
+        .ok_or_else(|| anyhow!("Could not unwrap playlists data"))?
         .is_empty());
 
     // asserts client two cannot access the playlist songs (should return error)
     assert_eq!(
         client_two
-            .do_get(format!("/api/playlists/{}/songs", playlist.data.id).as_str())
+            .do_get(format!("/api/playlists/{}/songs", playlist_data.id).as_str())
             .await?
             .status()
             .as_u16(),
@@ -242,7 +256,7 @@ async fn playlist_exclusivity_integration_test() -> Result<()> {
     // asserts client two cannot delete client one playlist
     assert_eq!(
         client_two
-            .do_delete(format!("/api/playlists/{}", playlist.data.id).as_str())
+            .do_delete(format!("/api/playlists/{}", playlist_data.id).as_str())
             .await?
             .status()
             .as_u16(),
@@ -252,7 +266,7 @@ async fn playlist_exclusivity_integration_test() -> Result<()> {
     // asserts client two cannot delete client one playlist_song
     assert_eq!(
         client_two
-            .do_delete(format!("/api/playlists/{}/songs/{}", playlist.data.id, queen_song).as_str())
+            .do_delete(format!("/api/playlists/{}/songs/{}", playlist_data.id, queen_song).as_str())
             .await?
             .status()
             .as_u16(),
@@ -291,7 +305,7 @@ async fn user_song_deletion_integration_test() -> Result<()> {
         )
         .await?;
 
-    let playlist: ModelResponse<entity::playlist::Model> = client
+    let playlist: ResponseModel<entity::playlist::Model> = client
         .do_post(
             "/api/playlists",
             json!({
@@ -301,10 +315,14 @@ async fn user_song_deletion_integration_test() -> Result<()> {
         .await?
         .json_body_as()?;
 
+    let playlist_data = playlist
+        .data
+        .ok_or_else(|| anyhow!("Could not unwrap playlist data"))?;
+
     // adds song to playlist
     client
         .do_post(
-            format!("/api/playlists/{}/songs", playlist.data.id).as_str(),
+            format!("/api/playlists/{}/songs", playlist_data.id).as_str(),
             json!({
                 "song_id": acdc_song
                 }
@@ -314,10 +332,11 @@ async fn user_song_deletion_integration_test() -> Result<()> {
 
     // asserts it was actually added to the playlist
     assert!(client
-        .do_get(format!("/api/playlists/{}/songs", playlist.data.id).as_str())
+        .do_get(format!("/api/playlists/{}/songs", playlist_data.id).as_str())
         .await?
-        .json_body_as::<ModelResponse<Vec<entity::song::Model>>>()?
+        .json_body_as::<ResponseModel<Vec<entity::song::Model>>>()?
         .data
+        .ok_or_else(|| anyhow!("Could not unwrap playlist songs data"))?
         .iter()
         .map(|song| song.id.as_str())
         .collect::<Vec<&str>>()
@@ -330,10 +349,11 @@ async fn user_song_deletion_integration_test() -> Result<()> {
 
     // asserts it is no longer in the playlist
     assert!(!client
-        .do_get(format!("/api/playlists/{}/songs", playlist.data.id).as_str())
+        .do_get(format!("/api/playlists/{}/songs", playlist_data.id).as_str())
         .await?
-        .json_body_as::<ModelResponse<Vec<entity::song::Model>>>()?
+        .json_body_as::<ResponseModel<Vec<entity::song::Model>>>()?
         .data
+        .ok_or_else(|| anyhow!("Could not unwrap playlist songs data"))?
         .iter()
         .map(|song| song.id.as_str())
         .collect::<Vec<&str>>()

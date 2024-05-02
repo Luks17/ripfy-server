@@ -1,6 +1,6 @@
 use super::{
     error::{Error, Result},
-    ModelResponse,
+    ResponseModel,
 };
 use crate::{
     context::Ctx,
@@ -43,8 +43,10 @@ async fn get_song_handler(
         Err(_) => return Err(Error::DbSelectFailed),
     };
 
-    Ok(Json(json!(ModelResponse {
-        data: Song { ..song },
+    Ok(Json(json!(ResponseModel {
+        success: true,
+        data: Some(Song { ..song }),
+        error: None
     })))
 }
 
@@ -74,8 +76,10 @@ async fn add_song_handler(
             .await
             .map_err(|_| Error::DbInsertFailed)?;
 
-        return Ok(Json(json!(ModelResponse {
-            data: Song { ..song },
+        return Ok(Json(json!(ResponseModel {
+            success: true,
+            data: Some(Song { ..song }),
+            error: None
         })));
     }
 
@@ -89,8 +93,10 @@ async fn add_song_handler(
         .await
         .map_err(|_| Error::DbInsertFailed)?;
 
-    Ok(Json(json!(ModelResponse {
-        data: Song { ..new_song }
+    Ok(Json(json!(ResponseModel {
+        success: true,
+        data: Some(Song { ..new_song }),
+        error: None
     })))
 }
 

@@ -6,6 +6,9 @@ pub mod song;
 pub mod stream;
 
 use crate::crypt::token::Token;
+use entity::playlist::Model as Playlist;
+use entity::song::Model as Song;
+use entity::user::Model as User;
 use error::Result;
 use mw::AUTH_TOKEN;
 use serde::{Deserialize, Serialize};
@@ -13,6 +16,11 @@ use tower_cookies::{Cookie, Cookies};
 use utoipa::ToSchema;
 
 #[derive(Debug, Serialize, Deserialize, ToSchema)]
+#[aliases(
+    ResponseModelUser = ResponseModel<User>,
+    ResponseModelSong = ResponseModel<Song>,
+    ResponseModelPlaylist = ResponseModel<Playlist>
+)]
 pub struct ResponseModel<T> {
     pub success: bool,
     #[serde(skip_serializing_if = "Option::is_none")]

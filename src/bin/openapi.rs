@@ -5,6 +5,7 @@ use tokio::net::TcpListener;
 use tracing_subscriber::EnvFilter;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
+use utoipauto::utoipauto;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -28,9 +29,17 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
+#[utoipauto(paths = "
+    ./src/api/mod.rs from ripfy_server,
+    ./src/api/auth.rs from ripfy_server,
+    ./src/api/song.rs from ripfy_server,
+    ./src/api/playlist.rs from ripfy_server,
+    ./entity/src/user.rs from entity,
+    ./entity/src/song.rs from entity,
+    ./entity/src/playlist.rs from entity
+")]
 #[derive(OpenApi)]
-#[openapi(
-    info(description = "
+#[openapi(info(description = "
 ## About
 This REST API uses JSON to share and manipulate resources, mainly music tracks.
 Most routes are protected and require an access token appended to the request.
@@ -41,23 +50,27 @@ The access token will be appended as a cookie at the response headers.
 ## Response Format and Errors
 All responses have the following format:
 
-On a successfuly query:
+### On a successfuly query:
 ```
 {
+    'success': true,
     'data': {Response}
 }
 ```
 
-On a failed query:
+### Or just:
 ```
 {
-    'error': {
-        'type': {Type}
-    }
+    'success': true
 }
 ```
-"),
-    paths(ripfy_server::api::auth::login_handler),
-    components(schemas(ripfy_server::api::auth::AuthPayload))
-)]
+
+### On a failed query:
+```
+{
+    'success': false,
+    'error': {Type}
+}
+```
+"))]
 struct ApiDoc;

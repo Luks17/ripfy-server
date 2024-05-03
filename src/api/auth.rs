@@ -1,6 +1,7 @@
-use super::{error::Error, error::Result, gen_and_set_token_cookie, remove_token_cookie};
+use super::{
+    error::Error, error::Result, gen_and_set_token_cookie, remove_token_cookie, ResponseModel,
+};
 use crate::{
-    api::ResponseModel,
     crypt::passwd::{gen_salt, passwd_encrypt, verify_encrypted_passwd},
     db, AppState,
 };
@@ -26,7 +27,9 @@ pub fn router(state: AppState) -> Router {
     path = "/api/login",
     request_body = AuthPayload,
     responses(
-        (status = 200, description = "Logged in successfully")
+        (status = 200, description = "Logged in successfully", body = ResponseModelUser),
+        (status = 401, description = "Credentials incorrect, login failed", body = ResponseModelUser),
+        (status = 500, description = "Something went wrong during login", body = ResponseModelUser)
     )
 )]
 async fn login_handler(

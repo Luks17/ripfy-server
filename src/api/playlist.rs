@@ -57,7 +57,6 @@ async fn get_playlist_songs_handler(
         .await
         .map_err(|_| Error::DbSelectFailed)?;
 
-    // TODO: does not have type assertion, implement later
     Ok(Json(json!(ResponseModel {
         success: true,
         data: Some(songs),

@@ -2,15 +2,13 @@ use super::{
     error::Error, error::Result, gen_and_set_token_cookie, remove_token_cookie, ResponseModel,
 };
 use crate::{
-    api::{error::ClientError, ResponseModelUser},
+    api::{error::ClientError, payloads::auth::AuthPayload, ResponseModelUser},
     crypt::passwd::{gen_salt, passwd_encrypt, verify_encrypted_passwd},
     db, AppState,
 };
 use axum::{extract::State, routing::post, Json, Router};
-use serde::Deserialize;
 use serde_json::{json, Value};
 use tower_cookies::Cookies;
-use utoipa::ToSchema;
 
 pub fn router(state: AppState) -> Router {
     Router::new()
@@ -105,10 +103,4 @@ async fn logout_handler(cookies: Cookies) -> Result<Json<Value>> {
         data: None,
         error: None
     })))
-}
-
-#[derive(Debug, Deserialize, ToSchema)]
-pub struct AuthPayload {
-    username: String,
-    pwd: String,
 }

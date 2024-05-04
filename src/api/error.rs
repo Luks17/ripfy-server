@@ -96,6 +96,7 @@ impl Error {
                 (StatusCode::UNAUTHORIZED, ClientError::NO_AUTH)
             }
             Self::UserAlreadyExists => (StatusCode::CONFLICT, ClientError::USERNAME_ALREADY_USED),
+
             _ => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 ClientError::SERVICE_ERROR,

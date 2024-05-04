@@ -1,12 +1,18 @@
 use super::error::{Error, Result};
-use crate::{api::ResponseModel, context::Ctx, db, AppState};
+use crate::{
+    api::{
+        payloads::playlist::{PlaylistPayload, PlaylistSongPayload},
+        ResponseModel,
+    },
+    context::Ctx,
+    db, AppState,
+};
 use axum::{
     extract::{Path, State},
     routing::{delete, get, post},
     Json, Router,
 };
 use entity::playlist::Model as Playlist;
-use serde::Deserialize;
 use serde_json::{json, Value};
 
 pub fn router(state: AppState) -> Router {
@@ -157,14 +163,4 @@ async fn delete_playlist_song_handler(
         data: None,
         error: None
     })))
-}
-
-#[derive(Debug, Deserialize)]
-struct PlaylistPayload {
-    title: String,
-}
-
-#[derive(Debug, Deserialize)]
-struct PlaylistSongPayload {
-    song_id: String,
 }

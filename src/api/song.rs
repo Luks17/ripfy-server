@@ -3,6 +3,7 @@ use super::{
     ResponseModel,
 };
 use crate::{
+    api::payloads::song::SongPayload,
     context::Ctx,
     db,
     util::{
@@ -17,7 +18,6 @@ use axum::{
     Json, Router,
 };
 use entity::song::Model as Song;
-use serde::Deserialize;
 use serde_json::{json, Value};
 
 pub fn router(state: AppState) -> Router {
@@ -119,9 +119,4 @@ async fn remove_song_handler(
         data: None,
         error: None
     })))
-}
-
-#[derive(Debug, Deserialize)]
-struct SongPayload {
-    link: String,
 }

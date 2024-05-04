@@ -34,6 +34,9 @@ async fn main() -> Result<()> {
     ./src/api/auth.rs from ripfy_server,
     ./src/api/song.rs from ripfy_server,
     ./src/api/playlist.rs from ripfy_server,
+    ./src/api/payloads/auth.rs from ripfy_server,
+    ./src/api/payloads/playlist.rs from ripfy_server,
+    ./src/api/payloads/song.rs from ripfy_server,
     ./entity/src/user.rs from entity,
     ./entity/src/song.rs from entity,
     ./entity/src/playlist.rs from entity

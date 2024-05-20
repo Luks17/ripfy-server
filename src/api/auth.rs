@@ -1,11 +1,15 @@
 use super::{error::Error, error::Result, ResponseModel};
 use crate::{
-    api::{error::ClientError, payloads::auth::AuthPayload, AuthModel, ResponseModelUser},
+    api::{
+        error::ClientError,
+        payloads::auth::{AuthPayload, AuthTokenPayload},
+        AuthModel, ResponseModelUser,
+    },
     crypt::{
         passwd::{gen_salt, passwd_encrypt, verify_encrypted_passwd},
         token::Token,
     },
-    db, AppState,
+    db, keys, AppState,
 };
 use axum::{extract::State, routing::post, Json, Router};
 use serde_json::{json, Value};
@@ -14,6 +18,7 @@ pub fn router(state: AppState) -> Router {
     Router::new()
         .route("/login", post(login_handler))
         .route("/signup", post(signup_handler))
+        .route("/refresh-token", post(refresh_token_handler))
         .with_state(state)
 }
 
@@ -53,7 +58,7 @@ async fn login_handler(
     }
 
     let access_token = Token::new_access_token(&user.id)?.to_string();
-    let refresh_token = Token::new_refresh_token()?.to_string();
+    let refresh_token = Token::new_refresh_token(&user.id)?.to_string();
 
     Ok(Json(json!(ResponseModel::<AuthModel> {
         success: true,
@@ -91,6 +96,32 @@ async fn signup_handler(
     Ok(Json(json!(ResponseModel::<()> {
         success: true,
         data: None,
+        error: None
+    })))
+}
+
+async fn refresh_token_handler(
+    State(_state): State<AppState>,
+    Json(payload): Json<AuthTokenPayload>,
+) -> Result<Json<Value>> {
+    tracing::debug!("REFRESH TOKEN HANDLER");
+
+    let AuthTokenPayload { auth_token } = payload;
+
+    let token: Token = auth_token.parse()?;
+    token.validate(&keys().verifying_key)?;
+
+    let user_id = token.identifier;
+
+    let access_token = Token::new_access_token(&user_id)?.to_string();
+    let refresh_token = Token::new_refresh_token(&user_id)?.to_string();
+
+    Ok(Json(json!(ResponseModel::<AuthModel> {
+        success: true,
+        data: Some(AuthModel {
+            access_token,
+            refresh_token
+        }),
         error: None
     })))
 }

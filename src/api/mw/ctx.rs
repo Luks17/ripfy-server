@@ -7,6 +7,7 @@ use axum::{
     http::{request::Parts, Request},
     middleware::Next,
     response::Response,
+    RequestExt,
 };
 use axum_auth::AuthBearer;
 
@@ -27,14 +28,10 @@ pub async fn ctx_require_auth(
 
 /// Middleware for extracting bearer token from authorization request header and returning a context
 /// Also refreshes token if valid or removes it if invalid
-pub async fn ctx_resolver(
-    AuthBearer(token): AuthBearer,
-    mut req: Request<Body>,
-    next: Next,
-) -> Result<Response> {
+pub async fn ctx_resolver(mut req: Request<Body>, next: Next) -> Result<Response> {
     tracing::debug!("MIDDLEWARE - CTX_RESOLVER");
 
-    let ctx = parse_token(&token).await;
+    let ctx = extract_and_parse_token(&mut req).await;
 
     // Store the ctx_result in the request extension.
     req.extensions_mut().insert(ctx);
@@ -42,7 +39,13 @@ pub async fn ctx_resolver(
     Ok(next.run(req).await)
 }
 
-async fn parse_token(token: &str) -> Result<Ctx> {
+async fn extract_and_parse_token(req: &mut Request<Body>) -> Result<Ctx> {
+    let token: String = req
+        .extract_parts::<AuthBearer>()
+        .await
+        .map(|AuthBearer(bearer)| bearer)
+        .map_err(|_| Error::NoAuthToken)?;
+
     // if the token exists and the parse is successful, the token is then validated
     let token: Token = token.parse()?;
     token.validate(&keys().verifying_key)?;

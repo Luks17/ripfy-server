@@ -9,7 +9,6 @@ use rsa::{
     signature::Verifier,
 };
 use std::{fmt::Display, str::FromStr};
-use uuid::Uuid;
 
 #[derive(Debug)]
 pub struct Token {
@@ -81,11 +80,11 @@ impl Token {
         Ok(token)
     }
 
-    pub fn new_refresh_token() -> Result<Self, Error> {
+    pub fn new_refresh_token(user: &str) -> Result<Self, Error> {
         let duration = &config().refresh_token_duration_secs;
         let key = &keys().signing_key;
 
-        let token = Self::new(&Uuid::new_v4().to_string(), duration, key)?;
+        let token = Self::new(user, duration, key)?;
 
         Ok(token)
     }

@@ -36,7 +36,6 @@ serde_json = "1.0.116"
 strum_macros = "0.26.2"
 tokio = { workspace = true }
 thiserror = "1.0.59"
-tower-cookies = "0.10.0"
 tower-http = { version = "0.5.2", features = ["fs"] }
 uuid = { version = "1.8.0", features = ["v4", "fast-rng"] }
 tracing = { workspace = true }
@@ -51,6 +50,7 @@ tower = "0.4.13"
 utoipa = { workspace = true }
 utoipa-swagger-ui = { workspace = true }
 utoipauto = { version = "0.1.10", features = ["generic_full_path"] }
+axum-auth = "0.7.0"
 
 [dev-dependencies]
 dev_utils = { path = "dev_utils" }

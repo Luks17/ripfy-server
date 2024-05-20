@@ -11,7 +11,6 @@ pub use conf::keys;
 use axum::middleware;
 use axum::Router;
 use sea_orm::DatabaseConnection;
-use tower_cookies::CookieManagerLayer;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -31,5 +30,4 @@ pub fn build_app(state: AppState) -> Router {
         .nest("/api", routes_rest)
         .merge(api::stream::router(state.clone()))
         .layer(middleware::from_fn(api::mw::ctx::ctx_resolver))
-        .layer(CookieManagerLayer::new())
 }

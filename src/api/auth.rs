@@ -1,12 +1,14 @@
-use super::{error::Error, error::Result, gen_and_set_token_cookie, ResponseModel};
+use super::{error::Error, error::Result, ResponseModel};
 use crate::{
-    api::{error::ClientError, payloads::auth::AuthPayload, ResponseModelUser},
-    crypt::passwd::{gen_salt, passwd_encrypt, verify_encrypted_passwd},
+    api::{error::ClientError, payloads::auth::AuthPayload, AuthModel, ResponseModelUser},
+    crypt::{
+        passwd::{gen_salt, passwd_encrypt, verify_encrypted_passwd},
+        token::Token,
+    },
     db, AppState,
 };
 use axum::{extract::State, routing::post, Json, Router};
 use serde_json::{json, Value};
-use tower_cookies::Cookies;
 
 pub fn router(state: AppState) -> Router {
     Router::new()
@@ -15,9 +17,9 @@ pub fn router(state: AppState) -> Router {
         .with_state(state)
 }
 
-/// Receives a payload of format: { username, passwd }
+/// Receives a payload of format: { username, pwd }
 /// Checks if user exists and it's password is correct
-/// If everything goes fine, generates an access token for said user and stores it on the cookies
+/// If everything goes fine, generates a token pair for the user and returns it
 #[utoipa::path(
     post,
     path = "/api/login",
@@ -33,7 +35,6 @@ pub fn router(state: AppState) -> Router {
 )]
 async fn login_handler(
     State(state): State<AppState>,
-    cookies: Cookies,
     Json(payload): Json<AuthPayload>,
 ) -> Result<Json<Value>> {
     tracing::debug!("LOGIN HANDLER");
@@ -51,11 +52,15 @@ async fn login_handler(
         return Err(Error::IncorrectPasswd);
     }
 
-    gen_and_set_token_cookie(&cookies, &user.id).await?;
+    let access_token = Token::new_access_token(&user.id)?.to_string();
+    let refresh_token = Token::new_refresh_token()?.to_string();
 
-    Ok(Json(json!(ResponseModel::<()> {
+    Ok(Json(json!(ResponseModel::<AuthModel> {
         success: true,
-        data: None,
+        data: Some(AuthModel {
+            access_token,
+            refresh_token
+        }),
         error: None
     })))
 }

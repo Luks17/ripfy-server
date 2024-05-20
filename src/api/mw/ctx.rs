@@ -1,7 +1,4 @@
-use super::{
-    error::{Error, Result},
-    gen_and_set_token_cookie, AUTH_TOKEN,
-};
+use super::error::{Error, Result};
 use crate::{context::Ctx, crypt::token::Token, keys};
 use async_trait::async_trait;
 use axum::{
@@ -11,7 +8,7 @@ use axum::{
     middleware::Next,
     response::Response,
 };
-use tower_cookies::Cookies;
+use axum_auth::AuthBearer;
 
 // This middleware is useful to restrict access to routes only to authenticated users
 // When an extractor is wrapped in Result, axum will not immediately reject the request if it does
@@ -28,16 +25,16 @@ pub async fn ctx_require_auth(
     Ok(next.run(request).await)
 }
 
-/// Middleware for extracting token cookie from request header and returning a context
+/// Middleware for extracting bearer token from authorization request header and returning a context
 /// Also refreshes token if valid or removes it if invalid
 pub async fn ctx_resolver(
-    cookies: Cookies,
+    AuthBearer(token): AuthBearer,
     mut req: Request<Body>,
     next: Next,
 ) -> Result<Response> {
     tracing::debug!("MIDDLEWARE - CTX_RESOLVER");
 
-    let ctx = verify_and_refresh_token(&cookies).await;
+    let ctx = parse_token(&token).await;
 
     // Store the ctx_result in the request extension.
     req.extensions_mut().insert(ctx);
@@ -45,19 +42,10 @@ pub async fn ctx_resolver(
     Ok(next.run(req).await)
 }
 
-async fn verify_and_refresh_token(cookies: &Cookies) -> Result<Ctx> {
-    // extracts auth token from cookies as a string
-    let token_str = cookies
-        .get(AUTH_TOKEN)
-        .map(|c| c.value().to_string())
-        .ok_or(Error::NoAuthToken)?;
-
+async fn parse_token(token: &str) -> Result<Ctx> {
     // if the token exists and the parse is successful, the token is then validated
-    let token: Token = token_str.parse()?;
+    let token: Token = token.parse()?;
     token.validate(&keys().verifying_key)?;
-
-    // refreshes access token
-    gen_and_set_token_cookie(cookies, &token.identifier).await?;
 
     Ok(Ctx::new(&token.identifier))
 }

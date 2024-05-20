@@ -48,23 +48,5 @@ async fn auth_permissions_integration_test() -> Result<()> {
 
     assert_eq!(add_song.await?.status(), StatusCode::OK.as_u16());
 
-    client
-        .do_post(
-            "/api/logout",
-            json!({
-            "logoff": true
-            }),
-        )
-        .await?;
-
-    let add_song = client.do_post(
-        "/api/songs",
-        json!({
-        "link": "https://youtu.be/fJ9rUzIMcZQ?si=RfOiwzgyIWE6XQb9"
-        }),
-    );
-
-    assert_eq!(add_song.await?.status(), StatusCode::UNAUTHORIZED.as_u16());
-
     Ok(())
 }

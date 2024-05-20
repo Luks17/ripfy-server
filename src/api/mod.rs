@@ -44,10 +44,3 @@ async fn gen_and_set_token_cookie(cookies: &Cookies, identifier: &str) -> Result
 
     Ok(())
 }
-
-async fn remove_token_cookie(cookies: &Cookies) {
-    let mut cookie = Cookie::from(AUTH_TOKEN);
-    cookie.set_path("/");
-
-    cookies.remove(cookie);
-}

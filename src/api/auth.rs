@@ -1,6 +1,4 @@
-use super::{
-    error::Error, error::Result, gen_and_set_token_cookie, remove_token_cookie, ResponseModel,
-};
+use super::{error::Error, error::Result, gen_and_set_token_cookie, ResponseModel};
 use crate::{
     api::{error::ClientError, payloads::auth::AuthPayload, ResponseModelUser},
     crypt::passwd::{gen_salt, passwd_encrypt, verify_encrypted_passwd},
@@ -14,7 +12,6 @@ pub fn router(state: AppState) -> Router {
     Router::new()
         .route("/login", post(login_handler))
         .route("/signup", post(signup_handler))
-        .route("/logout", post(logout_handler))
         .with_state(state)
 }
 
@@ -85,18 +82,6 @@ async fn signup_handler(
     db::user::create_new_user(&state, &username, &hashed_pwd)
         .await
         .map_err(|_| Error::DbInsertFailed)?;
-
-    Ok(Json(json!(ResponseModel::<()> {
-        success: true,
-        data: None,
-        error: None
-    })))
-}
-
-async fn logout_handler(cookies: Cookies) -> Result<Json<Value>> {
-    tracing::debug!("LOGOUT HANDLER");
-
-    remove_token_cookie(&cookies).await;
 
     Ok(Json(json!(ResponseModel::<()> {
         success: true,

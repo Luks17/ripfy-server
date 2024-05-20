@@ -1,6 +1,6 @@
 use super::{
     error::{Error, Result},
-    gen_and_set_token_cookie, remove_token_cookie, AUTH_TOKEN,
+    gen_and_set_token_cookie, AUTH_TOKEN,
 };
 use crate::{context::Ctx, crypt::token::Token, keys};
 use async_trait::async_trait;
@@ -38,15 +38,6 @@ pub async fn ctx_resolver(
     tracing::debug!("MIDDLEWARE - CTX_RESOLVER");
 
     let ctx = verify_and_refresh_token(&cookies).await;
-
-    // If the client sends an invalid cookie, we want to remove it
-    // these if statements take care of it
-    if let Err(ref e) = ctx {
-        if !matches!(*e, Error::NoAuthToken) {
-            tracing::debug!("MIDDLEWARE - CTX_RESOLVER - REMOVING INVALID COOKIE FROM HEADER");
-            remove_token_cookie(&cookies).await;
-        }
-    }
 
     // Store the ctx_result in the request extension.
     req.extensions_mut().insert(ctx);

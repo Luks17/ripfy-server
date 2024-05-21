@@ -6,7 +6,7 @@ use axum::{
 use serde_json::json;
 use thiserror::Error;
 
-use crate::{api::ResponseModel, crypt};
+use crate::{api::ResponseModel, crypt, util};
 
 pub type Result<T> = core::result::Result<T, Error>;
 
@@ -20,6 +20,8 @@ pub enum Error {
     TokenError(#[from] crypt::error::Error),
     #[error("The context is missing from the request extension! Something may have gone wrong on the token validation.")]
     CtxNotInRequestExtensions,
+    #[error("The provided token is not a valid refresh-token")]
+    InvalidRefreshToken,
 
     // DB
     #[error("Entered user does not exist!")]
@@ -52,6 +54,10 @@ pub enum Error {
     // SIGNUP
     #[error("User with that name already exists!")]
     UserAlreadyExists,
+
+    // redis
+    #[error(transparent)]
+    RedisError(#[from] util::error::RedisError),
 
     // INTERNAL
     #[error("Something went wrong while working with password encryption!")]

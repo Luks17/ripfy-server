@@ -22,6 +22,7 @@ tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 axum = "0.7.5"
 utoipa = { version = "4.2.0", features = ["axum_extras"] }
 utoipa-swagger-ui = { version = "6.0.0", features = ["axum"] }
+redis = { version = "0.25.3", features = ["tokio-comp"] }
 
 [dependencies]
 axum = { workspace = true }
@@ -51,7 +52,7 @@ utoipa = { workspace = true }
 utoipa-swagger-ui = { workspace = true }
 utoipauto = { version = "0.1.10", features = ["generic_full_path"] }
 axum-auth = "0.7.0"
-redis = { version = "0.25.3", features = ["tokio-comp"] }
+redis = { workspace = true }
 
 [dev-dependencies]
 dev_utils = { path = "dev_utils" }

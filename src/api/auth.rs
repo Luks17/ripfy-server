@@ -5,11 +5,14 @@ use crate::{
         payloads::auth::{AuthPayload, AuthTokenPayload},
         AuthModel, ResponseModelUser,
     },
+    config,
     crypt::{
         passwd::{gen_salt, passwd_encrypt, verify_encrypted_passwd},
         token::Token,
     },
-    db, keys, AppState,
+    db, keys,
+    util::redis::RedisConnection,
+    AppState,
 };
 use axum::{extract::State, routing::post, Json, Router};
 use serde_json::{json, Value};
@@ -46,6 +49,8 @@ async fn login_handler(
 
     let AuthPayload { username, pwd } = payload;
 
+    let mut redis_conn = RedisConnection::from_app_state(&state).await?;
+
     let user = match db::user::first_by_username(&state, &username).await {
         Ok(u) => u.ok_or(Error::UserNotFound)?,
         Err(_) => return Err(Error::DbSelectFailed),
@@ -58,6 +63,14 @@ async fn login_handler(
     }
 
     let (access_token, refresh_token) = Token::new_token_pair(&user.id).await?;
+
+    redis_conn
+        .setex(
+            refresh_token.to_string(),
+            user.id,
+            config().refresh_token_duration_secs,
+        )
+        .await?;
 
     Ok(Json(json!(ResponseModel::<AuthModel> {
         success: true,
@@ -100,19 +113,33 @@ async fn signup_handler(
 }
 
 async fn refresh_token_handler(
-    State(_state): State<AppState>,
+    State(state): State<AppState>,
     Json(payload): Json<AuthTokenPayload>,
 ) -> Result<Json<Value>> {
     tracing::debug!("REFRESH TOKEN HANDLER");
+
+    let mut redis_conn = RedisConnection::from_app_state(&state).await?;
 
     let AuthTokenPayload { auth_token } = payload;
 
     let token: Token = auth_token.parse()?;
     token.validate(&keys().verifying_key)?;
 
-    let user_id = token.identifier;
+    if token.is_access_token().is_ok() {
+        return Err(Error::InvalidRefreshToken);
+    }
+
+    let user_id = redis_conn.getdel(token.identifier).await?;
 
     let (access_token, refresh_token) = Token::new_token_pair(&user_id).await?;
+
+    redis_conn
+        .setex(
+            refresh_token.to_string(),
+            user_id,
+            config().refresh_token_duration_secs,
+        )
+        .await?;
 
     Ok(Json(json!(ResponseModel::<AuthModel> {
         success: true,

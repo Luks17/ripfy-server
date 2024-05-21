@@ -19,10 +19,11 @@ pub async fn spawn_test_app(port: u16, use_demo_users: bool) -> Result<()> {
     tracing::info!("BUILDING TEST APP");
 
     let db = Database::connect("sqlite::memory:").await?;
-
     Migrator::up(&db, None).await?;
 
-    let state = AppState { db };
+    let redis_client = redis::Client::open(config().redis_url.as_str())?;
+
+    let state = AppState { db, redis_client };
 
     if use_demo_users {
         demo_users(&state).await?;

@@ -22,3 +22,11 @@ pub enum Error {
     #[error("Could not process the output of the yt-dlp process!")]
     YtDlpOutputParseError,
 }
+
+#[derive(Error, Debug, Clone)]
+pub enum RedisError {
+    #[error("Failed to establish redis connection!")]
+    RedisConnFailed,
+    #[error("Failed to execute redis query!")]
+    RedisQueryFailed,
+}

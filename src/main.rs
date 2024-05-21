@@ -17,7 +17,9 @@ async fn main() -> Result<()> {
     keys();
 
     let db = db::connect().await?;
-    let state = AppState { db };
+    let redis_client = redis::Client::open(config().redis_url.as_str())?;
+
+    let state = AppState { db, redis_client };
 
     let app = build_app(state);
 

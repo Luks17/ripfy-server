@@ -15,6 +15,7 @@ use sea_orm::DatabaseConnection;
 #[derive(Clone)]
 pub struct AppState {
     pub db: DatabaseConnection,
+    pub redis_client: redis::Client,
 }
 
 // The difference between layers and route_layers used here is that route_layers apply only when

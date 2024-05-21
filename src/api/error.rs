@@ -97,7 +97,9 @@ impl Error {
             Self::SongNotFound | Self::FileNotFound | Self::PlaylistNotFound => {
                 (StatusCode::NOT_FOUND, ClientError::RESOURCE_NOT_FOUND)
             }
-            Self::InvalidPayload(..) => (StatusCode::BAD_REQUEST, ClientError::INVALID_BODY),
+            Self::InvalidPayload(..) | Self::InvalidRefreshToken => {
+                (StatusCode::BAD_REQUEST, ClientError::INVALID_BODY)
+            }
             Self::NoAuthToken | Self::TokenError(..) | Self::CtxNotInRequestExtensions => {
                 (StatusCode::UNAUTHORIZED, ClientError::NO_AUTH)
             }

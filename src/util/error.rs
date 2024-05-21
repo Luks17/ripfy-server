@@ -27,6 +27,6 @@ pub enum Error {
 pub enum RedisError {
     #[error("Failed to establish redis connection!")]
     RedisConnFailed,
-    #[error("Failed to execute redis query!")]
-    RedisQueryFailed,
+    #[error("Failed to execute redis query!\nReason: {0}")]
+    RedisQueryFailed(String),
 }

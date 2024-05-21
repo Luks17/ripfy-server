@@ -37,7 +37,7 @@ strum_macros = "0.26.2"
 tokio = { workspace = true }
 thiserror = "1.0.59"
 tower-http = { version = "0.5.2", features = ["fs"] }
-uuid = { version = "1.8.0", features = ["v4", "fast-rng"] }
+uuid = { version = "1.8.0", features = ["v4", "v7", "fast-rng"] }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 migration = { workspace = true }
@@ -51,6 +51,7 @@ utoipa = { workspace = true }
 utoipa-swagger-ui = { workspace = true }
 utoipauto = { version = "0.1.10", features = ["generic_full_path"] }
 axum-auth = "0.7.0"
+redis = { version = "0.25.3", features = ["tokio-comp"] }
 
 [dev-dependencies]
 dev_utils = { path = "dev_utils" }

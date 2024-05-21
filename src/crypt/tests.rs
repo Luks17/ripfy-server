@@ -8,6 +8,7 @@ use crate::{keys, util::time::now_utc_plus_sec_str};
 use anyhow::Result;
 use rsa::signature::Verifier;
 use std::time::Duration;
+use uuid::Uuid;
 
 #[test]
 fn encrypted_passwd() -> Result<()> {
@@ -56,12 +57,12 @@ fn signature() -> Result<()> {
     Ok(())
 }
 
-#[test]
-fn token() -> Result<()> {
-    let access_token = Token::new_access_token("good guy")?;
+#[tokio::test]
+async fn token() -> Result<()> {
+    let (access_token, _) = Token::new_token_pair("good guy").await?;
     access_token.validate(&keys().verifying_key)?;
 
-    let mut bad_token = Token::new_access_token("bad guy")?;
+    let (mut bad_token, _) = Token::new_token_pair("bad guy").await?;
     bad_token.identifier = "really good guy".into();
     assert!(bad_token.validate(&keys().verifying_key).is_err());
 
@@ -77,6 +78,17 @@ fn token() -> Result<()> {
         ),
     };
     assert!(expired_token.validate(&keys().verifying_key).is_err());
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn access_vs_refresh_token() -> Result<()> {
+    let user_identifier = Uuid::new_v4();
+    let (access_token, refresh_token) = Token::new_token_pair(&user_identifier.to_string()).await?;
+
+    assert!(access_token.is_access_token().is_ok());
+    assert!(refresh_token.is_access_token().is_err());
 
     Ok(())
 }

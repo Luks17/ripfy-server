@@ -57,14 +57,13 @@ async fn login_handler(
         return Err(Error::IncorrectPasswd);
     }
 
-    let access_token = Token::new_access_token(&user.id)?.to_string();
-    let refresh_token = Token::new_refresh_token(&user.id)?.to_string();
+    let (access_token, refresh_token) = Token::new_token_pair(&user.id).await?;
 
     Ok(Json(json!(ResponseModel::<AuthModel> {
         success: true,
         data: Some(AuthModel {
-            access_token,
-            refresh_token
+            access_token: access_token.to_string(),
+            refresh_token: refresh_token.to_string()
         }),
         error: None
     })))
@@ -113,14 +112,13 @@ async fn refresh_token_handler(
 
     let user_id = token.identifier;
 
-    let access_token = Token::new_access_token(&user_id)?.to_string();
-    let refresh_token = Token::new_refresh_token(&user_id)?.to_string();
+    let (access_token, refresh_token) = Token::new_token_pair(&user_id).await?;
 
     Ok(Json(json!(ResponseModel::<AuthModel> {
         success: true,
         data: Some(AuthModel {
-            access_token,
-            refresh_token
+            access_token: access_token.to_string(),
+            refresh_token: refresh_token.to_string()
         }),
         error: None
     })))

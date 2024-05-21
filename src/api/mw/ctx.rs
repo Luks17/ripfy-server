@@ -39,6 +39,9 @@ pub async fn ctx_resolver(mut req: Request<Body>, next: Next) -> Result<Response
     Ok(next.run(req).await)
 }
 
+/// - Checks if auth token is present in the request
+/// - Tries to parse it and then validates it (checks signature and expiration)
+/// - If is valid, checks if it is an access token and not a refresh token
 async fn extract_and_parse_token(req: &mut Request<Body>) -> Result<Ctx> {
     let token: String = req
         .extract_parts::<AuthBearer>()
@@ -46,9 +49,10 @@ async fn extract_and_parse_token(req: &mut Request<Body>) -> Result<Ctx> {
         .map(|AuthBearer(bearer)| bearer)
         .map_err(|_| Error::NoAuthToken)?;
 
-    // if the token exists and the parse is successful, the token is then validated
     let token: Token = token.parse()?;
     token.validate(&keys().verifying_key)?;
+
+    token.is_access_token()?;
 
     Ok(Ctx::new(&token.identifier))
 }

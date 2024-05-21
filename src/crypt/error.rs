@@ -14,8 +14,12 @@ pub enum Error {
     SignParsingFailed,
     #[error(transparent)]
     FailedToGetTime(#[from] util::error::Error),
+    #[error("The provided token identifier is not a valid uuid")]
+    InvalidTokenIdentifier,
     #[error("The provided token content does not match with the signature!")]
     InvalidTokenSignature,
     #[error("The provided token is expired!")]
     ExpiredTokenError,
+    #[error("The provided token is not an access_token!")]
+    NotAnAccessTokenError,
 }

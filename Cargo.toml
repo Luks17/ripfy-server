@@ -54,4 +54,7 @@ axum-auth = "0.7.0"
 
 [dev-dependencies]
 dev_utils = { path = "dev_utils" }
-httpc-test = "0.1.9"
+httpc-test = { version = "0.1.9" }
+
+[patch.crates-io]
+httpc-test = { git = "https://github.com/Luks17/rust-httpc-test.git", branch = "auth-header" }

@@ -9,6 +9,7 @@ use rsa::{
     signature::Verifier,
 };
 use std::{fmt::Display, str::FromStr};
+use uuid::{Uuid, Version};
 
 #[derive(Debug)]
 pub struct Token {
@@ -71,13 +72,31 @@ impl Token {
         Ok(())
     }
 
-    pub fn new_access_token(user: &str) -> Result<Self, Error> {
-        let duration = &config().access_token_duration_secs;
+    pub fn is_access_token(&self) -> Result<(), Error> {
+        let identifier =
+            Uuid::from_str(&self.identifier).map_err(|_| Error::InvalidTokenIdentifier)?;
+
+        let version = Uuid::get_version(&identifier).ok_or(Error::InvalidTokenIdentifier)?;
+
+        match version {
+            Version::Random => Ok(()),
+            _ => Err(Error::NotAnAccessTokenError),
+        }
+    }
+
+    pub async fn new_token_pair(user: &str) -> Result<(Self, Self), Error> {
+        let access_token_identifier = user;
+        let access_token_duration = &config().access_token_duration_secs;
+
+        let refresh_token_identifier = &Uuid::now_v7().to_string();
+        let refresh_token_duration = &config().refresh_token_duration_secs;
+
         let key = &keys().signing_key;
 
-        let token = Self::new(user, duration, key)?;
+        let access_token = Self::new(access_token_identifier, access_token_duration, key)?;
+        let refresh_token = Self::new(refresh_token_identifier, refresh_token_duration, key)?;
 
-        Ok(token)
+        Ok((access_token, refresh_token))
     }
 
     fn new(identifier: &str, duration_secs: &u64, key: &SigningKey<Sha512>) -> Result<Self, Error> {

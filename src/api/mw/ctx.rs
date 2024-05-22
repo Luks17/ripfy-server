@@ -1,7 +1,4 @@
-use super::{
-    error::{Error, Result},
-    gen_and_set_token_cookie, remove_token_cookie, AUTH_TOKEN,
-};
+use super::error::{Error, Result};
 use crate::{context::Ctx, crypt::token::Token, keys};
 use async_trait::async_trait;
 use axum::{
@@ -10,8 +7,9 @@ use axum::{
     http::{request::Parts, Request},
     middleware::Next,
     response::Response,
+    RequestExt,
 };
-use tower_cookies::Cookies;
+use axum_auth::AuthBearer;
 
 // This middleware is useful to restrict access to routes only to authenticated users
 // When an extractor is wrapped in Result, axum will not immediately reject the request if it does
@@ -28,25 +26,12 @@ pub async fn ctx_require_auth(
     Ok(next.run(request).await)
 }
 
-/// Middleware for extracting token cookie from request header and returning a context
+/// Middleware for extracting bearer token from authorization request header and returning a context
 /// Also refreshes token if valid or removes it if invalid
-pub async fn ctx_resolver(
-    cookies: Cookies,
-    mut req: Request<Body>,
-    next: Next,
-) -> Result<Response> {
+pub async fn ctx_resolver(mut req: Request<Body>, next: Next) -> Result<Response> {
     tracing::debug!("MIDDLEWARE - CTX_RESOLVER");
 
-    let ctx = verify_and_refresh_token(&cookies).await;
-
-    // If the client sends an invalid cookie, we want to remove it
-    // these if statements take care of it
-    if let Err(ref e) = ctx {
-        if !matches!(*e, Error::NoAuthToken) {
-            tracing::debug!("MIDDLEWARE - CTX_RESOLVER - REMOVING INVALID COOKIE FROM HEADER");
-            remove_token_cookie(&cookies).await;
-        }
-    }
+    let ctx = extract_and_parse_token(&mut req).await;
 
     // Store the ctx_result in the request extension.
     req.extensions_mut().insert(ctx);
@@ -54,19 +39,20 @@ pub async fn ctx_resolver(
     Ok(next.run(req).await)
 }
 
-async fn verify_and_refresh_token(cookies: &Cookies) -> Result<Ctx> {
-    // extracts auth token from cookies as a string
-    let token_str = cookies
-        .get(AUTH_TOKEN)
-        .map(|c| c.value().to_string())
-        .ok_or(Error::NoAuthToken)?;
+/// - Checks if auth token is present in the request
+/// - Tries to parse it and then validates it (checks signature and expiration)
+/// - If is valid, checks if it is an access token and not a refresh token
+async fn extract_and_parse_token(req: &mut Request<Body>) -> Result<Ctx> {
+    let token: String = req
+        .extract_parts::<AuthBearer>()
+        .await
+        .map(|AuthBearer(bearer)| bearer)
+        .map_err(|_| Error::NoAuthToken)?;
 
-    // if the token exists and the parse is successful, the token is then validated
-    let token: Token = token_str.parse()?;
+    let token: Token = token.parse()?;
     token.validate(&keys().verifying_key)?;
 
-    // refreshes access token
-    gen_and_set_token_cookie(cookies, &token.identifier).await?;
+    token.is_access_token()?;
 
     Ok(Ctx::new(&token.identifier))
 }

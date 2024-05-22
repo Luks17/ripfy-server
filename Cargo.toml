@@ -22,6 +22,7 @@ tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 axum = "0.7.5"
 utoipa = { version = "4.2.0", features = ["axum_extras"] }
 utoipa-swagger-ui = { version = "6.0.0", features = ["axum"] }
+redis = { version = "0.25.3", features = ["tokio-comp"] }
 
 [dependencies]
 axum = { workspace = true }
@@ -36,9 +37,8 @@ serde_json = "1.0.116"
 strum_macros = "0.26.2"
 tokio = { workspace = true }
 thiserror = "1.0.59"
-tower-cookies = "0.10.0"
 tower-http = { version = "0.5.2", features = ["fs"] }
-uuid = { version = "1.8.0", features = ["v4", "fast-rng"] }
+uuid = { version = "1.8.0", features = ["v4", "v7", "fast-rng"] }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 migration = { workspace = true }
@@ -51,7 +51,12 @@ tower = "0.4.13"
 utoipa = { workspace = true }
 utoipa-swagger-ui = { workspace = true }
 utoipauto = { version = "0.1.10", features = ["generic_full_path"] }
+axum-auth = "0.7.0"
+redis = { workspace = true }
 
 [dev-dependencies]
 dev_utils = { path = "dev_utils" }
-httpc-test = "0.1.9"
+httpc-test = { version = "0.1.9" }
+
+[patch.crates-io]
+httpc-test = { git = "https://github.com/Luks17/rust-httpc-test.git", branch = "auth-header" }

@@ -11,11 +11,11 @@ pub use conf::keys;
 use axum::middleware;
 use axum::Router;
 use sea_orm::DatabaseConnection;
-use tower_cookies::CookieManagerLayer;
 
 #[derive(Clone)]
 pub struct AppState {
     pub db: DatabaseConnection,
+    pub redis_client: redis::Client,
 }
 
 // The difference between layers and route_layers used here is that route_layers apply only when
@@ -31,5 +31,4 @@ pub fn build_app(state: AppState) -> Router {
         .nest("/api", routes_rest)
         .merge(api::stream::router(state.clone()))
         .layer(middleware::from_fn(api::mw::ctx::ctx_resolver))
-        .layer(CookieManagerLayer::new())
 }

@@ -45,10 +45,9 @@ async fn main() -> Result<()> {
 #[openapi(info(description = "
 ## About
 This REST API uses JSON to share and manipulate resources, mainly music tracks.
-Most routes are protected and require an access token appended to the request.
+Most routes are protected and require a bearer token appended to the request authorization header.
 
-To get an access token, please login using the route at the auth routes section.
-The access token will be appended as a cookie at the response headers.
+To get an access and a refresh token, please login using the route at the auth routes section.
 
 ## Response Format and Errors
 All responses have the following format:

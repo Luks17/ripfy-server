@@ -38,6 +38,7 @@ pub fn keys() -> &'static Keys {
 #[derive(Deserialize, Serialize)]
 pub struct Config {
     pub db_location: String,
+    pub redis_url: String,
     pub private_key_path: String,
     pub access_token_duration_secs: u64,
     pub refresh_token_duration_secs: u64,
@@ -52,6 +53,7 @@ impl Default for Config {
     fn default() -> Self {
         Config {
             db_location: "ripfy.sqlite".into(),
+            redis_url: "redis://127.0.0.1:6379".into(),
             private_key_path: "key.pem".into(),
             access_token_duration_secs: 1800,    // 30 minutes
             refresh_token_duration_secs: 604800, // 1 week

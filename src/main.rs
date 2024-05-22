@@ -16,8 +16,12 @@ async fn main() -> Result<()> {
     config();
     keys();
 
+    tracing::info!("Connecting to database...");
     let db = db::connect().await?;
-    let state = AppState { db };
+    tracing::info!("Creating redis client...");
+    let redis_client = redis::Client::open(config().redis_url.as_str())?;
+
+    let state = AppState { db, redis_client };
 
     let app = build_app(state);
 

@@ -2,29 +2,33 @@ name: Continuous Integration
 
 on:
   push:
-    branches-ignore: [ "main" ]
+    branches-ignore: ["main"]
   pull_request:
-    branches: [ "**" ]
+    branches: ["**"]
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-    - name: Install Dependencies
-      run: | 
-        sudo apt-get update && sudo apt-get -y install curl ffmpeg
-        sudo curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
-        sudo chmod a+rx /usr/local/bin/yt-dlp
-    
-    - name: Build
-      run: cargo build
-      
-    - name: Run tests
-      run: cargo test
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update && sudo apt-get -y install curl ffmpeg
+          sudo curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
+          sudo chmod a+rx /usr/local/bin/yt-dlp
+
+      - name: Start redis
+        uses: supercharge/redis-github-action@1.7.0
+        with:
+          redis-version: 7
+
+      - name: Build
+        run: cargo build
+
+      - name: Run tests
+        run: cargo test

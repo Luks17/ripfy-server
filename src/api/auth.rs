@@ -135,7 +135,7 @@ async fn refresh_token_handler(
 
     redis_conn
         .setex(
-            refresh_token.to_string(),
+            refresh_token.identifier.clone(),
             user_id,
             config().refresh_token_duration_secs,
         )

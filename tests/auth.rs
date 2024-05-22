@@ -170,7 +170,7 @@ async fn auth_tokens_refresh_integration_test() -> Result<()> {
             .await?
             .status()
             .as_u16(),
-        StatusCode::INTERNAL_SERVER_ERROR
+        StatusCode::BAD_REQUEST
     );
 
     assert_eq!(

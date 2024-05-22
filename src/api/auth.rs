@@ -129,7 +129,10 @@ async fn refresh_token_handler(
         return Err(Error::InvalidRefreshToken);
     }
 
-    let user_id = redis_conn.getdel(token.identifier).await?;
+    let user_id = redis_conn
+        .getdel(token.identifier)
+        .await
+        .map_err(|_| Error::InvalidRefreshToken)?;
 
     let (access_token, refresh_token) = Token::new_token_pair(&user_id).await?;
 

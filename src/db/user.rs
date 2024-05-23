@@ -10,7 +10,7 @@ pub async fn first_by_username(
     let db = &state.db;
 
     let user = user::Entity::find()
-        .filter(user::Column::Username.contains(username))
+        .filter(user::Column::Username.eq(username))
         .one(db)
         .await?;
 

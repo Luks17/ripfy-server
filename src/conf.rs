@@ -55,8 +55,8 @@ impl Default for Config {
             db_location: "ripfy.sqlite".into(),
             redis_url: "redis://127.0.0.1:6379".into(),
             private_key_path: "key.pem".into(),
-            access_token_duration_secs: 1800,    // 30 minutes
-            refresh_token_duration_secs: 604800, // 1 week
+            access_token_duration_secs: 60 * 20, // 20 minutes
+            refresh_token_duration_secs: 60 * 60 * 24 * 7 * 2, // 2 weeks
             yt_dlp_binary_path: "yt-dlp".into(), // default value assumes binary is on PATH
             yt_dlp_output_path: "media".into(),  // directory where media will be outputed
             yt_dlp_timeout_milisecs: 30000,      // 30 seconds

@@ -22,10 +22,28 @@ use serde_json::{json, Value};
 
 pub fn router(state: AppState) -> Router {
     Router::new()
+        .route("/songs", get(get_all_songs_handler))
         .route("/songs/:id", get(get_song_handler))
         .route("/songs", post(add_song_handler))
         .route("/songs/:id", delete(remove_song_handler))
         .with_state(state)
+}
+
+/// Returns all songs previously requested by user
+///
+/// WILL NOT return a song owned by another user
+async fn get_all_songs_handler(State(state): State<AppState>, ctx: Ctx) -> Result<Json<Value>> {
+    tracing::debug!("GET ALL SONGS HANDLER");
+
+    let songs = db::song::all_from_user(&state, &ctx.user_id())
+        .await
+        .map_err(|_| Error::DbSelectFailed)?;
+
+    Ok(Json(json!(ResponseModel {
+        success: true,
+        data: Some(songs),
+        error: None
+    })))
 }
 
 /// Returns a song if the user that made the request previously requested it

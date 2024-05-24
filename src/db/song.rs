@@ -2,8 +2,8 @@ use super::junctions;
 use crate::AppState;
 use entity::{playlist_song, song, user_song};
 use sea_orm::{
-    ActiveModelTrait, ActiveValue, ColumnTrait, DbErr, EntityTrait, JoinType, QueryFilter,
-    QuerySelect, RelationTrait,
+    ActiveModelTrait, ActiveValue, ColumnTrait, DatabaseBackend, DbErr, EntityTrait, JoinType,
+    QueryFilter, QuerySelect, QueryTrait, RelationTrait,
 };
 
 /// Finds a song entity that is related by user_song to an user entity and Returns it
@@ -42,6 +42,18 @@ pub async fn all_from_playlist(
     let songs = song::Entity::find()
         .join(JoinType::LeftJoin, song::Relation::PlaylistSong.def())
         .filter(playlist_song::Column::PlaylistId.eq(playlist_id))
+        .all(db)
+        .await?;
+
+    Ok(songs)
+}
+
+pub async fn all_from_user(state: &AppState, user_id: &str) -> Result<Vec<song::Model>, DbErr> {
+    let db = &state.db;
+
+    let songs = song::Entity::find()
+        .join(JoinType::LeftJoin, song::Relation::UserSong.def())
+        .filter(user_song::Column::UserId.eq(user_id))
         .all(db)
         .await?;
 

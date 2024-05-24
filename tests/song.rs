@@ -1,7 +1,7 @@
 use anyhow::Result;
 use axum::http::StatusCode;
 use dev_utils::{spawn_test_app, util::get_port};
-use ripfy_server::api::ResponseModelAuth;
+use ripfy_server::api::{ResponseModel, ResponseModelAuth};
 use serde_json::json;
 
 #[tokio::test]
@@ -70,6 +70,8 @@ async fn song_existance_integration_test() -> Result<()> {
 
     let mut client = httpc_test::new_client(format!("http://localhost:{}", port))?;
 
+    let queen_classics_songs = ["fJ9rUzIMcZQ", "2ZBtPf7FOoM"];
+
     client.add_auth_header(
         httpc_test::AuthHeaderType::Bearer,
         client
@@ -86,25 +88,60 @@ async fn song_existance_integration_test() -> Result<()> {
             .access_token,
     )?;
 
-    let get_song_status = client.do_get("/api/songs/fJ9rUzIMcZQ").await?.status();
+    let get_song_status = client
+        .do_get(format!("/api/songs/{}", queen_classics_songs[0]).as_str())
+        .await?
+        .status();
+
+    // asserts first queen song was not inserted yet
     assert_eq!(get_song_status, StatusCode::NOT_FOUND.as_u16());
 
-    client
-        .do_post(
-            "/api/songs",
-            json!({
-                "link": "https://www.youtube.com/watch?v=fJ9rUzIMcZQ"
-                }
-            ),
-        )
-        .await?;
+    // adds queen songs
+    for song in queen_classics_songs.iter() {
+        client
+            .do_post(
+                "/api/songs",
+                json!({
+                    "link": format!("https://youtu.be/{}", song)
+                    }
+                ),
+            )
+            .await?;
+    }
 
-    let get_song_status = client.do_get("/api/songs/fJ9rUzIMcZQ").await?.status();
+    let get_song_status = client
+        .do_get(format!("/api/songs/{}", queen_classics_songs[0]).as_str())
+        .await?
+        .status();
+
+    // asserts first queen song was added
     assert_eq!(get_song_status, StatusCode::OK.as_u16());
 
-    client.do_delete("/api/songs/fJ9rUzIMcZQ").await?;
+    let retrieved_songs: Vec<String> = client
+        .get::<ResponseModel<Vec<entity::song::Model>>>("/api/songs")
+        .await?
+        .data
+        .unwrap()
+        .iter()
+        .map(|song| song.id.clone())
+        .collect();
 
-    let get_song_status = client.do_get("/api/songs/fJ9rUzIMcZQ").await?.status();
+    // asserts all queen songs were inserted
+    for song in queen_classics_songs.iter() {
+        assert!(retrieved_songs.contains(&song.to_string()));
+    }
+
+    // deletes first queen song
+    client
+        .do_delete(format!("/api/songs/{}", queen_classics_songs[0]).as_str())
+        .await?;
+
+    let get_song_status = client
+        .do_get(format!("/api/songs/{}", queen_classics_songs[0]).as_str())
+        .await?
+        .status();
+
+    // asserts first queen song was deleted
     assert_eq!(get_song_status, StatusCode::NOT_FOUND.as_u16());
 
     Ok(())

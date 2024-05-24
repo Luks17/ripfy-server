@@ -93,7 +93,7 @@ async fn playlist_songs_insertion_deletion_integration_test() -> Result<()> {
 
     // asserts all queen songs were inserted
     for song in queen_classics_songs.iter() {
-        assert!(songs.contains(&song.to_string()))
+        assert!(songs.contains(&song.to_string()));
     }
 
     // adds acdc song to playlist by 'mistake'

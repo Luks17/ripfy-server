@@ -1,5 +1,17 @@
 services:
+  ripfy-server:
+    build: .
+    image: ripfy-server:1.0
+    container_name: ripfy-server
+    environment:
+      - RUST_LOG=ripfy_server=debug
+      - RIPFY_REDIS_URL=redis://redis-ripfy:6379
+    ports:
+      - 7717:7717
+    links:
+      - redis-ripfy
+
   redis-ripfy:
     image: redis:latest
     ports:
-      - "6379:6379"
+      - 6379:6379

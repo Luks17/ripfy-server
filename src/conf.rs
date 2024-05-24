@@ -1,7 +1,7 @@
 use crate::crypt::gen_key::gen_private_key_if_not_exists;
 use anyhow::Result;
 use figment::{
-    providers::{Format, Serialized, Toml},
+    providers::{Env, Format, Serialized, Toml},
     Figment,
 };
 use rsa::{
@@ -68,6 +68,7 @@ impl Default for Config {
 impl Config {
     fn new() -> Result<Self> {
         let c = Figment::from(Serialized::defaults(Config::default()))
+            .merge(Env::prefixed("RIPFY_"))
             .merge(Toml::file("conf.toml"))
             .extract()?;
 

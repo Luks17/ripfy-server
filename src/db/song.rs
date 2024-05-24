@@ -2,8 +2,8 @@ use super::junctions;
 use crate::AppState;
 use entity::{playlist_song, song, user_song};
 use sea_orm::{
-    ActiveModelTrait, ActiveValue, ColumnTrait, DatabaseBackend, DbErr, EntityTrait, JoinType,
-    QueryFilter, QuerySelect, QueryTrait, RelationTrait,
+    ActiveModelTrait, ActiveValue, ColumnTrait, DbErr, EntityTrait, JoinType, QueryFilter,
+    QuerySelect, RelationTrait,
 };
 
 /// Finds a song entity that is related by user_song to an user entity and Returns it

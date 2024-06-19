@@ -32,6 +32,15 @@ pub fn router(state: AppState) -> Router {
 /// Returns all songs previously requested by user
 ///
 /// WILL NOT return a song owned by another user
+#[utoipa::path(
+    get,
+    path = "/api/songs",
+    request_body = AuthPayload,
+    responses(
+        (status = 200, description = "Success loading all music", body = ResponseModelUser,
+            example = json!(ResponseModelUser { success: true, data: Some, error: None }))
+    )
+)]
 async fn get_all_songs_handler(State(state): State<AppState>, ctx: Ctx) -> Result<Json<Value>> {
     tracing::debug!("GET ALL SONGS HANDLER");
 
@@ -49,6 +58,17 @@ async fn get_all_songs_handler(State(state): State<AppState>, ctx: Ctx) -> Resul
 /// Returns a song if the user that made the request previously requested it
 ///
 /// WILL NOT return a song owned by another user
+#[utoipa::path(
+    get,
+    path = "/api/songs/:id",
+    request_body = AuthPayload,
+    responses(
+        (status = 200, description = "Success loading music", body = ResponseModel,
+            example = json!(ResponseModel ::<()> { success: true, data: Some, error: None })),
+        (status = 500, description = "Failed to load music", body = ResponseModel,
+            example = json!(ResponseModel ::<()> {success: false, data: None, error: Some(ClientError::SERVICE_ERROR.as_ref().to_string())}))
+    )
+)]
 async fn get_song_handler(
     State(state): State<AppState>,
     ctx: Ctx,
@@ -74,6 +94,17 @@ async fn get_song_handler(
 ///
 /// If the song already exists, no new song is created or actually downloaded, but instead the song
 /// is just linked to the user by a junction table
+#[utoipa::path(
+    post,
+    path = "/api/songs",
+    request_body = AuthPayload,
+    responses(
+        (status = 200, description = "Success adding songs", body = ResponseModel,
+            example = json!(ResponseModel ::<()> { success: true, data: Some, error: None })),
+        (status = 200, description = "Success adding songs", body = ResponseModel,
+            example = json!(ResponseModel ::<()> { success: true, data: Some, error: None }))
+    )
+)]
 async fn add_song_handler(
     State(state): State<AppState>,
     ctx: Ctx,
@@ -120,6 +151,15 @@ async fn add_song_handler(
 
 /// It's a soft delete, because it only removes user_song junction table, does not actually remove
 /// song table or song file
+#[utoipa::path(
+    delete,
+    path = "/api/songs/:id",
+    request_body = AuthPayload,
+    responses(
+        (status = 200, description = "Success adding songs", body = ResponseModel,
+            example = json!(ResponseModel ::<()> { success: true, data: None, error: None }))
+    )
+)]
 async fn remove_song_handler(
     State(state): State<AppState>,
     ctx: Ctx,

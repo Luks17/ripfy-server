@@ -22,16 +22,23 @@ pub fn router(state: AppState) -> Router {
         .route("/playlists", post(create_playlist_handler))
         .route("/playlists/:id/songs", post(add_playlist_song_handler))
         .route("/playlists/:id", delete(delete_playlist_handler))
-        .route(
-            "/playlists/:playlist_id/songs/:song_id",
-            delete(delete_playlist_song_handler),
-        )
-        .with_state(state)
+        .route("/playlists/:playlist_id/songs/:song_id",
+                delete(delete_playlist_song_handler),
+                 ) .with_state(state)
 }
 
 /// Returns playlists created by user if any exists
 ///
 /// WILL NOT return a playlist owned by another user
+#[utoipa::path(
+    get,
+    path = "/api/playlists",
+    request_body = AuthPayload,
+    responses(
+        (status = 200, description = "Success loading all playlists", body = ResponseModel,
+            example = json!(ResponseModel ::<()> { success: true, data: Some, error: None }))
+    )
+)]
 async fn get_playlists_handler(State(state): State<AppState>, ctx: Ctx) -> Result<Json<Value>> {
     tracing::debug!("GET PLAYLISTS HANDLER");
 
@@ -45,6 +52,16 @@ async fn get_playlists_handler(State(state): State<AppState>, ctx: Ctx) -> Resul
         error: None
     })))
 }
+
+#[utoipa::path(
+    get,
+    path = "/api/playlists/:id/songs",
+    request_body = AuthPayload,
+    responses(
+        (status = 200, description = "Success loading playlist", body = ResponseModel,
+            example = json!(ResponseModel ::<()> { success: true, data: Some, error: None }))
+    )
+)]
 
 async fn get_playlist_songs_handler(
     State(state): State<AppState>,
@@ -70,6 +87,16 @@ async fn get_playlist_songs_handler(
     })))
 }
 
+#[utoipa::path(
+    post,
+    path = "/api/playlists",
+    request_body = PlaylistPayload,
+    responses(
+        (status = 200, description = "Success create playlist", body = ResponseModel,
+            example = json!(ResponseModel ::<()> { success: true, data: Some, error: None }))
+    )
+)]
+
 async fn create_playlist_handler(
     State(state): State<AppState>,
     ctx: Ctx,
@@ -89,6 +116,16 @@ async fn create_playlist_handler(
         error: None
     })))
 }
+
+#[utoipa::path(
+    post,
+    path = "/api/playlists/:id/songs",
+    request_body = PlaylistSongPayload,
+    responses(
+        (status = 200, description = "Success add song in playlist", body = ResponseModel,
+            example = json!(ResponseModel ::<()> { success: true, data: Some, error: None }))
+    )
+)]
 
 async fn add_playlist_song_handler(
     State(state): State<AppState>,
@@ -110,12 +147,22 @@ async fn add_playlist_song_handler(
         .await
         .map_err(|_| Error::DbInsertFailed)?;
 
-    Ok(Json(json!(ResponseModel::<()> {
+    Ok(Json(json!(ResponseModel ::<()> {
         success: true,
         data: None,
         error: None
     })))
 }
+
+#[utoipa::path(
+    delete,
+    path = "/api/playlists/:id",
+    request_body = PlaylistSongPayload,
+    responses(
+        (status = 200, description = "Success delete playlist", body = ResponseModel,
+            example = json!(ResponseModel ::<()> { success: true, data: None, error: None }))
+    )
+)]
 
 async fn delete_playlist_handler(
     State(state): State<AppState>,
@@ -140,6 +187,16 @@ async fn delete_playlist_handler(
         error: None
     })))
 }
+
+#[utoipa::path(
+    delete,
+    path = "/api/playlists/:playlist_id/songs/:song_id",
+    request_body = PlaylistSongPayload,
+    responses(
+        (status = 200, description = "Success delete song in playlist", body = ResponseModel,
+            example = json!(ResponseModel ::<()> { success: true, data: None, error: None }))
+    )
+)]
 
 async fn delete_playlist_song_handler(
     State(state): State<AppState>,

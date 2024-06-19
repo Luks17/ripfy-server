@@ -35,10 +35,10 @@ pub fn router(state: AppState) -> Router {
 #[utoipa::path(
     get,
     path = "/api/songs",
-    request_body = AuthPayload,
+    request_body = SongPayload,
     responses(
-        (status = 200, description = "Success loading all music", body = ResponseModelUser,
-            example = json!(ResponseModelUser { success: true, data: Some, error: None }))
+        (status = 200, description = "Success loading all music", body = ResponseModel,
+            example = json!(ResponseModel { success: true, data: Some, error: None }))
     )
 )]
 async fn get_all_songs_handler(State(state): State<AppState>, ctx: Ctx) -> Result<Json<Value>> {
@@ -61,7 +61,7 @@ async fn get_all_songs_handler(State(state): State<AppState>, ctx: Ctx) -> Resul
 #[utoipa::path(
     get,
     path = "/api/songs/:id",
-    request_body = AuthPayload,
+    request_body = SongPayload,
     responses(
         (status = 200, description = "Success loading music", body = ResponseModel,
             example = json!(ResponseModel ::<()> { success: true, data: Some, error: None })),
@@ -97,7 +97,7 @@ async fn get_song_handler(
 #[utoipa::path(
     post,
     path = "/api/songs",
-    request_body = AuthPayload,
+    request_body = SongPayload,
     responses(
         (status = 200, description = "Success adding songs", body = ResponseModel,
             example = json!(ResponseModel ::<()> { success: true, data: Some, error: None })),
@@ -154,7 +154,7 @@ async fn add_song_handler(
 #[utoipa::path(
     delete,
     path = "/api/songs/:id",
-    request_body = AuthPayload,
+    request_body = SongPayload,
     responses(
         (status = 200, description = "Success adding songs", body = ResponseModel,
             example = json!(ResponseModel ::<()> { success: true, data: None, error: None }))

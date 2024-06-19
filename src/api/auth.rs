@@ -85,7 +85,7 @@ async fn login_handler(
 #[utoipa::path(
         post,
         path = "/api/signup",
-        request_body = AuthPayload
+        request_body = AuthPayload,
         responses
         (
             (status = 200, description = "Singup successfull", body = ResponseModel,
@@ -129,13 +129,13 @@ async fn signup_handler(
 #[utoipa::path(
     post,
     path = "/api/refresh-token",
-    request_body = AuthPayload
+    request_body = AuthTokenPayload,
     responses
         (
-        (status = 200, description = "Refresh token successfull", body = ResponseModel,
-            example = json!(ResponseModel ::<()> { success: true, data: None, error: None })),
-        (status = 400, description = "Somethings unexpected happened", body = ResponseModel,
-            example = json!(ResponseModel::<()> {success: false, data: None, error: Some(ClientError::INVALID_BODY.as_ref().to_string())})))
+        (status = 200, description = "Refresh token successfull", body = ResponseModelUser,
+            example = json!(ResponseModelUser ::<()> { success: true, data: Some, error: None })),
+        (status = 400, description = "Somethings unexpected happened", body = ResponseModelUser,
+            example = json!(ResponseModelUser ::<()> {success: false, data: None, error: Some(ClientError::INVALID_BODY.as_ref().to_string())})))
        
 )]
 

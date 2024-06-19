@@ -82,6 +82,20 @@ async fn login_handler(
     })))
 }
 
+#[utoipa::path(
+        post,
+        path = "/api/signup",
+        request_body = AuthPayload
+        responses
+        (
+            (status = 200, description = "Singup successfull", body = ResponseModel,
+            example = json!(ResponseModel ::<()> { success: true, data: None, error: None })),
+        (status = 500, description = "Somethings unexpected happened", body = ResponseModel,
+            example = json!(ResponseModel::<()> {success: false, data: None, error: Some(ClientError::SERVICE_ERROR.as_ref().to_string())})),
+        (status = 409, description = "User already exists", body = ResponseModelUser,
+            example = json!(ResponseModel ::<()> {success: false, data: None, error: Some(ClientError::USERNAME_ALREADY_USED.as_ref().to_string())}))
+        )
+)]
 async fn signup_handler(
     State(state): State<AppState>,
     Json(payload): Json<AuthPayload>,
@@ -111,6 +125,19 @@ async fn signup_handler(
         error: None
     })))
 }
+
+#[utoipa::path(
+    post,
+    path = "/api/refresh-token",
+    request_body = AuthPayload
+    responses
+        (
+        (status = 200, description = "Refresh token successfull", body = ResponseModel,
+            example = json!(ResponseModel ::<()> { success: true, data: None, error: None })),
+        (status = 400, description = "Somethings unexpected happened", body = ResponseModel,
+            example = json!(ResponseModel::<()> {success: false, data: None, error: Some(ClientError::INVALID_BODY.as_ref().to_string())})))
+       
+)]
 
 async fn refresh_token_handler(
     State(state): State<AppState>,

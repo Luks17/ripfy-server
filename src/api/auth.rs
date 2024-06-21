@@ -3,7 +3,7 @@ use crate::{
     api::{
         error::ClientError,
         payloads::auth::{AuthPayload, AuthTokenPayload},
-        AuthModel, ResponseModelUser,
+        AuthModel, ResponseModelAuth,
     },
     config,
     crypt::{
@@ -33,12 +33,16 @@ pub fn router(state: AppState) -> Router {
     path = "/api/login",
     request_body = AuthPayload,
     responses(
-        (status = 200, description = "Logged in successfully", body = ResponseModelUser,
-            example = json!(ResponseModelUser { success: true, data: None, error: None })),
-        (status = 401, description = "Credentials incorrect, login failed", body = ResponseModelUser,
-            example = json!(ResponseModelUser {success: false, data: None, error: Some(ClientError::LOGIN_FAIL.as_ref().to_string())})),
-        (status = 500, description = "Something went wrong during login", body = ResponseModelUser,
-            example = json!(ResponseModelUser {success: false, data: None, error: Some(ClientError::SERVICE_ERROR.as_ref().to_string())}))
+        (status = 200, description = "Logged in successfully", body = ResponseModelAuth,
+            example = json!(ResponseModelAuth {
+                success: true,
+                data: Some(AuthModel { access_token: "xzi8p21".into(), refresh_token: "lipa247x".into() } ),
+                error: None
+            })),
+        (status = 401, description = "Credentials incorrect, login failed", body = ResponseModelAuth,
+            example = json!(ResponseModelAuth {success: false, data: None, error: Some(ClientError::LOGIN_FAIL.as_ref().to_string())})),
+        (status = 500, description = "Something went wrong during login", body = ResponseModelAuth,
+            example = json!(ResponseModelAuth {success: false, data: None, error: Some(ClientError::SERVICE_ERROR.as_ref().to_string())}))
     )
 )]
 async fn login_handler(
@@ -132,10 +136,10 @@ async fn signup_handler(
     request_body = AuthTokenPayload,
     responses
         (
-        (status = 200, description = "Refresh token successfull", body = ResponseModelUser,
-            example = json!(ResponseModelUser ::<()> { success: true, data: Some, error: None })),
-        (status = 400, description = "Somethings unexpected happened", body = ResponseModelUser,
-            example = json!(ResponseModelUser ::<()> {success: false, data: None, error: Some(ClientError::INVALID_BODY.as_ref().to_string())})))
+        (status = 200, description = "Refresh token successfull", body = ResponseModelAuth,
+            example = json!(ResponseModelAuth { success: true, data: Some(AuthModel {access_token: "zb12pxr".into(), refresh_token: "lp01a3x".into()}), error: None })),
+        (status = 400, description = "Somethings unexpected happened", body = ResponseModelAuth,
+            example = json!(ResponseModelAuth {success: false, data: None, error: Some(ClientError::INVALID_BODY.as_ref().to_string())})))
        
 )]
 

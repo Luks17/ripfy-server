@@ -1,9 +1,9 @@
 use super::{
     error::{Error, Result},
-    ResponseModel,
+    ResponseModel, ResponseModelSong,
 };
 use crate::{
-    api::payloads::song::SongPayload,
+    api::{error::ClientError, payloads::song::SongPayload},
     context::Ctx,
     db,
     util::{
@@ -35,10 +35,16 @@ pub fn router(state: AppState) -> Router {
 #[utoipa::path(
     get,
     path = "/api/songs",
-    request_body = SongPayload,
     responses(
         (status = 200, description = "Success loading all music", body = ResponseModel,
-            example = json!(ResponseModel { success: true, data: Some, error: None }))
+            example = json!(ResponseModel::<Vec<Song>> {
+                success: true,
+                data: Some(vec![
+                    Song {id: "13rca0z".into(), title: "High Voltage".into(), channel: "AC/DC".into()},
+                    Song {id: "dkefj2c".into(), title: "Highway to Hell".into(), channel: "AC/DC".into()},
+                ]),
+                error: None
+            }))
     )
 )]
 async fn get_all_songs_handler(State(state): State<AppState>, ctx: Ctx) -> Result<Json<Value>> {
@@ -60,13 +66,17 @@ async fn get_all_songs_handler(State(state): State<AppState>, ctx: Ctx) -> Resul
 /// WILL NOT return a song owned by another user
 #[utoipa::path(
     get,
-    path = "/api/songs/:id",
-    request_body = SongPayload,
+    path = "/api/songs/{id}",
+    params(("id" = String, Path, description = "Song id")),
     responses(
-        (status = 200, description = "Success loading music", body = ResponseModel,
-            example = json!(ResponseModel ::<()> { success: true, data: Some, error: None })),
+        (status = 200, description = "Success loading music", body = ResponseModelSong,
+            example = json!(ResponseModelSong {
+                success: true,
+                data: Some(Song {id: "13rca0z".into(), title: "High Voltage".into(), channel: "AC/DC".into()}),
+                error: None
+            })),
         (status = 500, description = "Failed to load music", body = ResponseModel,
-            example = json!(ResponseModel ::<()> {success: false, data: None, error: Some(ClientError::SERVICE_ERROR.as_ref().to_string())}))
+            example = json!(ResponseModelSong {success: false, data: None, error: Some(ClientError::SERVICE_ERROR.as_ref().into())}))
     )
 )]
 async fn get_song_handler(
@@ -81,7 +91,7 @@ async fn get_song_handler(
         Err(_) => return Err(Error::DbSelectFailed),
     };
 
-    Ok(Json(json!(ResponseModel {
+    Ok(Json(json!(ResponseModelSong {
         success: true,
         data: Some(Song { ..song }),
         error: None
@@ -99,10 +109,12 @@ async fn get_song_handler(
     path = "/api/songs",
     request_body = SongPayload,
     responses(
-        (status = 200, description = "Success adding songs", body = ResponseModel,
-            example = json!(ResponseModel ::<()> { success: true, data: Some, error: None })),
-        (status = 200, description = "Success adding songs", body = ResponseModel,
-            example = json!(ResponseModel ::<()> { success: true, data: Some, error: None }))
+        (status = 200, description = "Success adding song", body = ResponseModelSong,
+            example = json!(ResponseModelSong {
+                success: true,
+                data: Some(Song {id: "13rca0z".into(), title: "High Voltage".into(), channel: "AC/DC".into()}),
+                error: None
+            }))
     )
 )]
 async fn add_song_handler(
@@ -125,7 +137,7 @@ async fn add_song_handler(
             .await
             .map_err(|_| Error::DbInsertFailed)?;
 
-        return Ok(Json(json!(ResponseModel {
+        return Ok(Json(json!(ResponseModelSong {
             success: true,
             data: Some(Song { ..song }),
             error: None
@@ -142,22 +154,21 @@ async fn add_song_handler(
         .await
         .map_err(|_| Error::DbInsertFailed)?;
 
-    Ok(Json(json!(ResponseModel {
+    Ok(Json(json!(ResponseModelSong {
         success: true,
         data: Some(Song { ..new_song }),
         error: None
     })))
 }
 
-/// It's a soft delete, because it only removes user_song junction table, does not actually remove
-/// song table or song file
+/// It's a soft delete, because it only removes user_song junction table, does not actually remove song table or song file
 #[utoipa::path(
     delete,
-    path = "/api/songs/:id",
-    request_body = SongPayload,
+    path = "/api/songs/{id}",
+    params(("id" = String, Path, description = "Song id")),
     responses(
-        (status = 200, description = "Success adding songs", body = ResponseModel,
-            example = json!(ResponseModel ::<()> { success: true, data: None, error: None }))
+        (status = 200, description = "Success deleting song", body = ResponseModel,
+            example = json!(ResponseModel::<()> { success: true, data: None, error: None }))
     )
 )]
 async fn remove_song_handler(

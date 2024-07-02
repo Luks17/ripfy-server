@@ -1,9 +1,9 @@
 use super::junctions;
-use crate::AppState;
+use crate::{api::queries::song::SongQuery, AppState};
 use entity::{playlist_song, song, user_song};
 use sea_orm::{
-    ActiveModelTrait, ActiveValue, ColumnTrait, DbErr, EntityTrait, JoinType, QueryFilter,
-    QuerySelect, RelationTrait,
+    ActiveModelTrait, ActiveValue, ColumnTrait, Condition, DbErr, EntityTrait, JoinType,
+    QueryFilter, QuerySelect, RelationTrait,
 };
 
 /// Finds a song entity that is related by user_song to an user entity and Returns it
@@ -48,16 +48,26 @@ pub async fn all_from_playlist(
     Ok(songs)
 }
 
-pub async fn all_from_user(state: &AppState, user_id: &str) -> Result<Vec<song::Model>, DbErr> {
+pub async fn all_from_user(
+    state: &AppState,
+    user_id: &str,
+    query_params: SongQuery,
+) -> Result<Vec<song::Model>, DbErr> {
     let db = &state.db;
 
-    let songs = song::Entity::find()
+    let mut query = song::Entity::find()
         .join(JoinType::LeftJoin, song::Relation::UserSong.def())
-        .filter(user_song::Column::UserId.eq(user_id))
-        .all(db)
-        .await?;
+        .filter(user_song::Column::UserId.eq(user_id));
 
-    Ok(songs)
+    if let Some(search_str) = query_params.search {
+        query = query.filter(
+            Condition::any()
+                .add(song::Column::Title.like(&search_str))
+                .add(song::Column::Channel.like(&search_str)),
+        );
+    }
+
+    query.all(db).await
 }
 
 /// Creates a new song entity on the database and Returns it

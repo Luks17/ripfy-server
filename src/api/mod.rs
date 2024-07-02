@@ -3,6 +3,7 @@ mod error;
 pub mod mw;
 pub mod payloads;
 pub mod playlist;
+pub mod queries;
 pub mod song;
 pub mod stream;
 

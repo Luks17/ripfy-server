@@ -3,7 +3,7 @@ use super::{
     ResponseModel, ResponseModelSong,
 };
 use crate::{
-    api::{error::ClientError, payloads::song::SongPayload},
+    api::{error::ClientError, payloads::song::SongPayload, queries::song::SongQuery},
     context::Ctx,
     db,
     util::{
@@ -13,7 +13,7 @@ use crate::{
     AppState,
 };
 use axum::{
-    extract::{Path, State},
+    extract::{Path, Query, State},
     routing::{delete, get, post},
     Json, Router,
 };
@@ -47,10 +47,14 @@ pub fn router(state: AppState) -> Router {
             }))
     )
 )]
-async fn get_all_songs_handler(State(state): State<AppState>, ctx: Ctx) -> Result<Json<Value>> {
+async fn get_all_songs_handler(
+    State(state): State<AppState>,
+    ctx: Ctx,
+    Query(query): Query<SongQuery>,
+) -> Result<Json<Value>> {
     tracing::debug!("GET ALL SONGS HANDLER");
 
-    let songs = db::song::all_from_user(&state, &ctx.user_id())
+    let songs = db::song::all_from_user(&state, &ctx.user_id(), query)
         .await
         .map_err(|_| Error::DbSelectFailed)?;
 

@@ -40,6 +40,7 @@ pub struct Config {
     pub db_location: String,
     pub redis_url: String,
     pub private_key_path: String,
+    pub migrate_on_startup: bool,
     pub access_token_duration_secs: u64,
     pub refresh_token_duration_secs: u64,
     pub yt_dlp_binary_path: String,
@@ -55,6 +56,7 @@ impl Default for Config {
             db_location: "ripfy.sqlite".into(),
             redis_url: "redis://127.0.0.1:6379".into(),
             private_key_path: "key.pem".into(),
+            migrate_on_startup: false,
             access_token_duration_secs: 60 * 20, // 20 minutes
             refresh_token_duration_secs: 60 * 60 * 24 * 7 * 2, // 2 weeks
             yt_dlp_binary_path: "yt-dlp".into(), // default value assumes binary is on PATH

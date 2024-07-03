@@ -3,9 +3,12 @@ services:
     build: .
     image: ripfy-server:1.0
     container_name: ripfy-server
+    volumes:
+      - ~/.local/state/docker-volumes/sistemas/ripfy_server:/usr/src/ripfy-server
     environment:
       - RUST_LOG=ripfy_server=debug
       - RIPFY_REDIS_URL=redis://redis-ripfy:6379
+      - RIPFY_MIGRATE_ON_STARTUP=true
     ports:
       - 7717:7717
     links:

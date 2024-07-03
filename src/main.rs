@@ -1,4 +1,5 @@
 use anyhow::Result;
+use migration::{Migrator, MigratorTrait};
 use ripfy_server::{build_app, config, db, keys, AppState};
 use std::net::SocketAddr;
 use tokio::net::TcpListener;
@@ -18,6 +19,10 @@ async fn main() -> Result<()> {
 
     tracing::info!("Connecting to database...");
     let db = db::connect().await?;
+    if config().migrate_on_startup {
+        Migrator::up(&db, None).await?;
+    }
+
     tracing::info!("Creating redis client...");
     let redis_client = redis::Client::open(config().redis_url.as_str())?;
 

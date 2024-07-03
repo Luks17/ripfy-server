@@ -62,8 +62,8 @@ pub async fn all_from_user(
     if let Some(search_str) = query_params.search {
         query = query.filter(
             Condition::any()
-                .add(song::Column::Title.like(&search_str))
-                .add(song::Column::Channel.like(&search_str)),
+                .add(song::Column::Title.like(format!("%{}%", &search_str)))
+                .add(song::Column::Channel.like(format!("%{}%", &search_str))),
         );
     }
 

@@ -2,33 +2,32 @@ use super::junctions;
 use crate::{api::queries::song::SongQuery, AppState};
 use entity::{playlist_song, song, user_song};
 use sea_orm::{
-    ActiveModelTrait, ActiveValue, ColumnTrait, Condition, DbErr, EntityTrait, JoinType,
-    QueryFilter, QuerySelect, RelationTrait,
+    ActiveValue, ColumnTrait, Condition, DbErr, EntityTrait, JoinType, QueryFilter, QuerySelect,
+    RelationTrait,
 };
 
-/// Finds a song entity that is related by user_song to an user entity and Returns it
+/// Finds a song entity
+/// If an user_id is provived, will find one that is related by user_song to an user entity and returns it
 ///
-/// Requires the AppState, SongId and the UserId of the User that made the request
+/// Requires the AppState, SongId and optionally UserId of the User that made the request
 ///
 /// Return sea_orm::DbErr if the SELECT operation fails
 pub async fn first_by_id(
     state: &AppState,
     song_id: &str,
-    user_id: &str,
+    user_id: Option<&str>,
 ) -> Result<Option<song::Model>, DbErr> {
     let db = &state.db;
 
-    // Equivalent to:
-    //
-    // SELECT song.*
-    // FROM song
-    // JOIN user_song ON song.id = user_song.song_id
-    // WHERE song.id = $input_song_id AND user_song.user_id = $input_user_id;
-    let song = song::Entity::find_by_id(song_id)
-        .join(JoinType::LeftJoin, song::Relation::UserSong.def())
-        .filter(user_song::Column::UserId.eq(user_id))
-        .one(db)
-        .await?;
+    let mut query = song::Entity::find_by_id(song_id);
+
+    if let Some(id) = user_id {
+        query = query
+            .join(JoinType::LeftJoin, song::Relation::UserSong.def())
+            .filter(user_song::Column::UserId.eq(id));
+    }
+
+    let song = query.one(db).await?;
 
     Ok(song)
 }
@@ -92,7 +91,9 @@ pub async fn create_new(
         channel: ActiveValue::Set(channel.to_string()),
     };
 
-    let new_song = new_song.insert(db).await?;
+    let new_song = song::Entity::insert(new_song)
+        .exec_with_returning(db)
+        .await?;
 
     junctions::user_song::create_new(state, user_id, link_id).await?;
 

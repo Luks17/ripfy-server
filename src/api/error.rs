@@ -32,6 +32,8 @@ pub enum Error {
     PlaylistNotFound,
     #[error("Failed to execute the insert query in the database!")]
     DbInsertFailed,
+    #[error("Failed insert entry, already exists!")]
+    DbInsertDuplicateEntryError,
     #[error("Failed to execute the select query in the database!")]
     DbSelectFailed,
     #[error("Failed to execute the update query in the database!")]
@@ -104,6 +106,9 @@ impl Error {
                 (StatusCode::UNAUTHORIZED, ClientError::NO_AUTH)
             }
             Self::UserAlreadyExists => (StatusCode::CONFLICT, ClientError::USERNAME_ALREADY_USED),
+            Self::DbInsertDuplicateEntryError => {
+                (StatusCode::CONFLICT, ClientError::RESOURCE_ALREADY_EXISTS)
+            }
 
             _ => (
                 StatusCode::INTERNAL_SERVER_ERROR,
@@ -121,5 +126,6 @@ pub enum ClientError {
     INVALID_BODY,
     SERVICE_ERROR,
     RESOURCE_NOT_FOUND,
+    RESOURCE_ALREADY_EXISTS,
     USERNAME_ALREADY_USED,
 }

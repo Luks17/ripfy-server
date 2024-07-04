@@ -1,8 +1,8 @@
 use crate::AppState;
 use entity::{playlist, playlist_song, user_song};
+use migration::OnConflict;
 use sea_orm::{
-    sea_query::Query, ActiveModelTrait, ActiveValue, ColumnTrait, Condition, DbErr, EntityTrait,
-    QueryFilter,
+    sea_query::Query, ActiveValue, ColumnTrait, Condition, DbErr, EntityTrait, QueryFilter,
 };
 
 /// Creates a new UserSong junction table that associates an user with a song
@@ -16,7 +16,14 @@ pub async fn create_new(state: &AppState, user_id: &str, song_id: &str) -> Resul
         ..Default::default()
     };
 
-    new_user_song.insert(db).await?;
+    user_song::Entity::insert(new_user_song)
+        .on_conflict(
+            OnConflict::columns(vec![user_song::Column::UserId, user_song::Column::SongId])
+                .do_nothing()
+                .to_owned(),
+        )
+        .exec(db)
+        .await?;
 
     Ok(())
 }

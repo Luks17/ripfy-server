@@ -18,6 +18,7 @@ use axum::{
     Json, Router,
 };
 use entity::song::Model as Song;
+use sea_orm::DbErr;
 use serde_json::{json, Value};
 
 pub fn router(state: AppState) -> Router {
@@ -90,7 +91,7 @@ async fn get_song_handler(
 ) -> Result<Json<Value>> {
     tracing::debug!("GET SONG HANDLER");
 
-    let song = match db::song::first_by_id(&state, &id, &ctx.user_id()).await {
+    let song = match db::song::first_by_id(&state, &id, Some(&ctx.user_id())).await {
         Ok(song) => song.ok_or(Error::SongNotFound)?,
         Err(_) => return Err(Error::DbSelectFailed),
     };
@@ -131,7 +132,7 @@ async fn add_song_handler(
     let SongPayload { link } = payload;
     let song_id = parse_yt_link(&link).map_err(|e| Error::InvalidPayload(e.to_string()))?;
 
-    let song_option = db::song::first_by_id(&state, &song_id, &ctx.user_id())
+    let song_option = db::song::first_by_id(&state, &song_id, None)
         .await
         .map_err(|_| Error::DbSelectFailed)?;
 
@@ -139,7 +140,10 @@ async fn add_song_handler(
     if let Some(song) = song_option {
         db::junctions::user_song::create_new(&state, &ctx.user_id(), &song_id)
             .await
-            .map_err(|_| Error::DbInsertFailed)?;
+            .map_err(|e| match e {
+                DbErr::RecordNotInserted => Error::DbInsertDuplicateEntryError,
+                _ => Error::DbInsertFailed,
+            })?;
 
         return Ok(Json(json!(ResponseModelSong {
             success: true,

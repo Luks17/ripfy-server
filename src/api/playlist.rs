@@ -2,13 +2,14 @@ use super::error::{Error, Result};
 use crate::{
     api::{
         payloads::playlist::{PlaylistPayload, PlaylistSongPayload},
+        queries::playlist::PlaylistQuery,
         ResponseModel, ResponseModelPlaylist,
     },
     context::Ctx,
     db, AppState,
 };
 use axum::{
-    extract::{Path, State},
+    extract::{Path, Query, State},
     routing::{delete, get, post},
     Json, Router,
 };
@@ -47,10 +48,14 @@ pub fn router(state: AppState) -> Router {
             }))
     )
 )]
-async fn get_playlists_handler(State(state): State<AppState>, ctx: Ctx) -> Result<Json<Value>> {
+async fn get_playlists_handler(
+    State(state): State<AppState>,
+    ctx: Ctx,
+    Query(query): Query<PlaylistQuery>,
+) -> Result<Json<Value>> {
     tracing::debug!("GET PLAYLISTS HANDLER");
 
-    let playlists = db::playlist::all_by_user_id(&state, &ctx.user_id())
+    let playlists = db::playlist::all_by_user_id(&state, &ctx.user_id(), query)
         .await
         .map_err(|_| Error::DbSelectFailed)?;
 

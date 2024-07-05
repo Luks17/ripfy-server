@@ -1,7 +1,9 @@
 use entity::playlist;
-use sea_orm::{ActiveModelTrait, ActiveValue, ColumnTrait, DbErr, EntityTrait, QueryFilter};
+use sea_orm::{
+    ActiveModelTrait, ActiveValue, ColumnTrait, Condition, DbErr, EntityTrait, QueryFilter,
+};
 
-use crate::AppState;
+use crate::{api::queries::playlist::PlaylistQuery, AppState};
 
 pub async fn first_by_id(
     state: &AppState,
@@ -21,15 +23,19 @@ pub async fn first_by_id(
 pub async fn all_by_user_id(
     state: &AppState,
     user_id: &str,
+    query_params: PlaylistQuery,
 ) -> Result<Vec<playlist::Model>, DbErr> {
     let db = &state.db;
 
-    let playlists = playlist::Entity::find()
-        .filter(playlist::Column::UserId.eq(user_id))
-        .all(db)
-        .await?;
+    let mut query = playlist::Entity::find().filter(playlist::Column::UserId.eq(user_id));
 
-    Ok(playlists)
+    if let Some(search_str) = query_params.search {
+        query = query.filter(
+            Condition::any().add(playlist::Column::Title.like(format!("%{}%", &search_str))),
+        );
+    }
+
+    query.all(db).await
 }
 
 pub async fn create_new(

@@ -2,7 +2,7 @@ use super::error::{Error, Result};
 use crate::{
     api::{
         payloads::playlist::{PlaylistPayload, PlaylistSongPayload},
-        queries::playlist::PlaylistQuery,
+        queries::{playlist::PlaylistQuery, song::SongQuery},
         ResponseModel, ResponseModelPlaylist,
     },
     context::Ctx,
@@ -87,6 +87,7 @@ async fn get_playlist_songs_handler(
     State(state): State<AppState>,
     ctx: Ctx,
     Path(id): Path<String>,
+    Query(query): Query<SongQuery>,
 ) -> Result<Json<Value>> {
     tracing::debug!("GET PLAYLIST SONGS HANDLER");
 
@@ -96,7 +97,7 @@ async fn get_playlist_songs_handler(
         .map_err(|_| Error::DbSelectFailed)?
         .ok_or(Error::PlaylistNotFound)?;
 
-    let songs = db::song::all_from_playlist(&state, &id)
+    let songs = db::song::all_from_playlist(&state, &id, query)
         .await
         .map_err(|_| Error::DbSelectFailed)?;
 

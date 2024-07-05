@@ -35,16 +35,23 @@ pub async fn first_by_id(
 pub async fn all_from_playlist(
     state: &AppState,
     playlist_id: &str,
+    query_params: SongQuery,
 ) -> Result<Vec<song::Model>, DbErr> {
     let db = &state.db;
 
-    let songs = song::Entity::find()
+    let mut query = song::Entity::find()
         .join(JoinType::LeftJoin, song::Relation::PlaylistSong.def())
-        .filter(playlist_song::Column::PlaylistId.eq(playlist_id))
-        .all(db)
-        .await?;
+        .filter(playlist_song::Column::PlaylistId.eq(playlist_id));
 
-    Ok(songs)
+    if let Some(search_str) = query_params.search {
+        query = query.filter(
+            Condition::any()
+                .add(song::Column::Title.like(format!("%{}%", &search_str)))
+                .add(song::Column::Channel.like(format!("%{}%", &search_str))),
+        );
+    }
+
+    query.all(db).await
 }
 
 pub async fn all_from_user(

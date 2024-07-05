@@ -1,5 +1,6 @@
 pub mod junctions;
 pub mod playlist;
+pub mod results;
 pub mod song;
 pub mod user;
 

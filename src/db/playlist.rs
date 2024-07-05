@@ -1,9 +1,12 @@
-use entity::playlist;
+use entity::{playlist, playlist_song};
 use sea_orm::{
-    ActiveModelTrait, ActiveValue, ColumnTrait, Condition, DbErr, EntityTrait, QueryFilter,
+    ActiveModelTrait, ActiveValue, ColumnTrait, Condition, DbErr, EntityTrait, JoinType,
+    QueryFilter, QuerySelect, RelationTrait,
 };
 
-use crate::{api::queries::playlist::PlaylistQuery, AppState};
+use crate::{
+    api::queries::playlist::PlaylistQuery, db::results::playlist::PlaylistModel, AppState,
+};
 
 pub async fn first_by_id(
     state: &AppState,
@@ -24,10 +27,13 @@ pub async fn all_by_user_id(
     state: &AppState,
     user_id: &str,
     query_params: PlaylistQuery,
-) -> Result<Vec<playlist::Model>, DbErr> {
+) -> Result<Vec<PlaylistModel>, DbErr> {
     let db = &state.db;
 
-    let mut query = playlist::Entity::find().filter(playlist::Column::UserId.eq(user_id));
+    let mut query = playlist::Entity::find()
+        .join(JoinType::LeftJoin, playlist::Relation::PlaylistSong.def())
+        .column_as(playlist_song::Column::PlaylistId.count(), "songs_number")
+        .filter(playlist::Column::UserId.eq(user_id));
 
     if let Some(search_str) = query_params.search {
         query = query.filter(
@@ -35,7 +41,7 @@ pub async fn all_by_user_id(
         );
     }
 
-    query.all(db).await
+    query.into_model::<PlaylistModel>().all(db).await
 }
 
 pub async fn create_new(

@@ -12,11 +12,15 @@ pub async fn first_by_id(
     state: &AppState,
     playlist_id: &str,
     user_id: &str,
-) -> Result<Option<playlist::Model>, DbErr> {
+) -> Result<Option<PlaylistModel>, DbErr> {
     let db = &state.db;
 
     let playlist = playlist::Entity::find_by_id(playlist_id)
+        .join(JoinType::LeftJoin, playlist::Relation::PlaylistSong.def())
+        .column_as(playlist_song::Column::PlaylistId.count(), "songs_number")
         .filter(playlist::Column::UserId.eq(user_id))
+        .group_by(playlist::Column::Id)
+        .into_model::<PlaylistModel>()
         .one(db)
         .await?;
 
@@ -33,7 +37,8 @@ pub async fn all_by_user_id(
     let mut query = playlist::Entity::find()
         .join(JoinType::LeftJoin, playlist::Relation::PlaylistSong.def())
         .column_as(playlist_song::Column::PlaylistId.count(), "songs_number")
-        .filter(playlist::Column::UserId.eq(user_id));
+        .filter(playlist::Column::UserId.eq(user_id))
+        .group_by(playlist::Column::Id);
 
     if let Some(search_str) = query_params.search {
         query = query.filter(

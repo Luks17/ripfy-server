@@ -1,7 +1,10 @@
 use anyhow::{anyhow, Result};
 use axum::http::StatusCode;
 use dev_utils::{spawn_test_app, util::get_port};
-use ripfy_server::api::{ResponseModel, ResponseModelAuth};
+use ripfy_server::{
+    api::{ResponseModel, ResponseModelAuth},
+    db::results::playlist::PlaylistModel,
+};
 use serde_json::json;
 
 #[tokio::test]
@@ -54,7 +57,7 @@ async fn playlist_songs_insertion_deletion_integration_test() -> Result<()> {
         .await?;
 
     // creates playlist
-    let playlist: ResponseModel<entity::playlist::Model> = client
+    let playlist: ResponseModel<PlaylistModel> = client
         .do_post(
             "/api/playlists",
             json!({

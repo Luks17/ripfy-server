@@ -6,14 +6,15 @@ use crate::{
         ResponseModel, ResponseModelPlaylist,
     },
     context::Ctx,
-    db, AppState,
+    db::{self, results::playlist::PlaylistModel},
+    AppState,
 };
 use axum::{
     extract::{Path, Query, State},
     routing::{delete, get, post},
     Json, Router,
 };
-use entity::{playlist::Model as Playlist, song::Model as Song};
+use entity::{playlist, song::Model as Song};
 use serde_json::{json, Value};
 
 pub fn router(state: AppState) -> Router {
@@ -38,11 +39,11 @@ pub fn router(state: AppState) -> Router {
     path = "/api/playlists",
     responses(
         (status = 200, description = "Success loading all playlists", body = ResponseModel,
-            example = json!(ResponseModel::<Vec<Playlist>> {
+            example = json!(ResponseModel::<Vec<PlaylistModel>> {
                 success: true,
                 data: Some(vec![
-                    Playlist {id: "rf2z5v".into(), user_id: "lka934".into(), title: "Queen classics".into()},
-                    Playlist {id: "lma3zt".into(), user_id: "lka934".into(), title: "Best of the 80s".into()}
+                    PlaylistModel {id: "rf2z5v".into(), user_id: "lka934".into(), title: "Queen classics".into(), songs_number: 4},
+                    PlaylistModel {id: "lma3zt".into(), user_id: "lka934".into(), title: "Best of the 80s".into(), songs_number: 7}
                 ]),
                 error: None
             }))
@@ -116,7 +117,7 @@ async fn get_playlist_songs_handler(
         (status = 200, description = "Success create playlist", body = ResponseModelPlaylist,
             example = json!(ResponseModelPlaylist {
                 success: true,
-                data: Some(Playlist { id: "aek143z".into(), title: "Bestof the 80s".into(), user_id: "la2sa9x".into() }),
+                data: Some(PlaylistModel { id: "aek143z".into(), title: "Bestof the 80s".into(), user_id: "la2sa9x".into(), songs_number: 0 }),
                 error: None
             }))
     )
@@ -130,13 +131,19 @@ async fn create_playlist_handler(
 
     let PlaylistPayload { title } = payload;
 
-    let new_playlist = db::playlist::create_new(&state, &ctx.user_id(), &title)
-        .await
-        .map_err(|_| Error::DbInsertFailed)?;
+    let playlist::Model { id, title, user_id } =
+        db::playlist::create_new(&state, &ctx.user_id(), &title)
+            .await
+            .map_err(|_| Error::DbInsertFailed)?;
 
     Ok(Json(json!(ResponseModelPlaylist {
         success: true,
-        data: Some(Playlist { ..new_playlist }),
+        data: Some(PlaylistModel {
+            id,
+            title,
+            user_id,
+            songs_number: 0,
+        }),
         error: None
     })))
 }

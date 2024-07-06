@@ -7,7 +7,7 @@ pub mod queries;
 pub mod song;
 pub mod stream;
 
-use entity::playlist::Model as Playlist;
+use crate::db::results::playlist::PlaylistModel;
 use entity::song::Model as Song;
 use entity::user::Model as User;
 use serde::{Deserialize, Serialize};
@@ -17,7 +17,7 @@ use utoipa::ToSchema;
 #[aliases(
     ResponseModelUser = ResponseModel<User>,
     ResponseModelSong = ResponseModel<Song>,
-    ResponseModelPlaylist = ResponseModel<Playlist>,
+    ResponseModelPlaylist = ResponseModel<PlaylistModel>,
     ResponseModelAuth = ResponseModel<AuthModel>
 )]
 pub struct ResponseModel<T> {

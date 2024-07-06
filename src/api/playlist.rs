@@ -189,7 +189,6 @@ async fn add_playlist_song_handler(
     delete,
     path = "/api/playlists/{id}",
     params(("id" = String, Path, description = "Playlist id")),
-    request_body = PlaylistSongPayload,
     responses(
         (status = 200, description = "Success deleting playlist", body = ResponseModel,
             example = json!(ResponseModel::<()> { success: true, data: None, error: None }))

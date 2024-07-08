@@ -69,6 +69,8 @@ impl YtDlp {
             "--print",
             "before_dl:%(.{channel,fulltitle})#j",
             "--write-thumbnail",
+            "--convert-thumbnails",
+            "jpg",
             "-x",
             "--audio-format",
             "opus",

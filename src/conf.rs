@@ -44,8 +44,8 @@ pub struct Config {
     pub access_token_duration_secs: u64,
     pub refresh_token_duration_secs: u64,
     pub yt_dlp_binary_path: String,
-    pub yt_dlp_output_path: String,
     pub yt_dlp_timeout_milisecs: u64,
+    pub media_folder_path: String,
     pub port: u16,
 }
 
@@ -60,8 +60,8 @@ impl Default for Config {
             access_token_duration_secs: 60 * 20, // 20 minutes
             refresh_token_duration_secs: 60 * 60 * 24 * 7 * 2, // 2 weeks
             yt_dlp_binary_path: "yt-dlp".into(), // default value assumes binary is on PATH
-            yt_dlp_output_path: "media".into(),  // directory where media will be outputed
             yt_dlp_timeout_milisecs: 30000,      // 30 seconds
+            media_folder_path: "media".into(),   // directory where media will be outputed
             port: 7717,
         }
     }
